@@ -1,0 +1,18 @@
+metric_code: dsr
+display_name: DSR / 口碑分
+version: "1.0"
+display_order: 110
+unit: "分"
+precision: 2
+additivity: NON_ADDITIVE
+formula: "dsr"
+null_policy: UNAUTHORIZED
+platform: "*"
+source_mapping: "dwd_review.dsr"
+description: "平台原始评分，按平台分别列示不混算"
+concept_uri: "concept.dsr"
+synonyms: ["评分"]
+probe_sql_template: "SELECT value FROM dws_daily_metric WHERE run_id = :run_id AND metric_code = 'dsr'"
+quality_tests: ["0-5 区间"]
+effective_from: "2026-11-01"
+breaking_change: false

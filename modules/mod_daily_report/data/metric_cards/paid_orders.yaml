@@ -1,0 +1,18 @@
+metric_code: paid_orders
+display_name: 支付订单数
+version: "1.0"
+display_order: 30
+unit: "单"
+precision: 0
+additivity: ADDITIVE
+formula: "paid_orders"
+null_policy: NO_DATA
+platform: "*"
+source_mapping: "dwd_order(order_id 去重)"
+description: "支付成功订单去重计数"
+concept_uri: "concept.paid_orders"
+synonyms: ["订单数"]
+probe_sql_template: "SELECT value FROM dws_daily_metric WHERE run_id = :run_id AND metric_code = 'paid_orders'"
+quality_tests: ["按 order_id 去重"]
+effective_from: "2026-11-01"
+breaking_change: false

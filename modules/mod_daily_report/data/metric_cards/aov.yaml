@@ -1,0 +1,18 @@
+metric_code: aov
+display_name: 客单价
+version: "1.0"
+display_order: 70
+unit: "元"
+precision: 2
+additivity: RATIO
+formula: "gmv / paid_orders"
+null_policy: NOT_APPLICABLE
+platform: "*"
+source_mapping: "计算列"
+description: "GMV / 支付订单数；分母为零记不适用"
+concept_uri: "concept.aov"
+synonyms: ["客单"]
+probe_sql_template: "SELECT value FROM dws_daily_metric WHERE run_id = :run_id AND metric_code = 'aov'"
+quality_tests: ["零分母不记 0", "不可加"]
+effective_from: "2026-11-01"
+breaking_change: false

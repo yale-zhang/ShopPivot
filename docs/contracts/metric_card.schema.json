@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MetricCard 口径卡契约（data/metric_cards/*.yaml）",
+  "kernel_api": "1.0",
+  "types": {
+    "MetricCardFileSpec": {
+      "additionalProperties": false,
+      "description": "data/metric_cards/*.yaml 的结构（口径卡可执行规格）。",
+      "properties": {
+        "metric_code": {
+          "title": "Metric Code",
+          "type": "string"
+        },
+        "display_name": {
+          "title": "Display Name",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        },
+        "display_order": {
+          "default": 100,
+          "title": "Display Order",
+          "type": "integer"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        },
+        "precision": {
+          "maximum": 6,
+          "minimum": 0,
+          "title": "Precision",
+          "type": "integer"
+        },
+        "additivity": {
+          "pattern": "^(ADDITIVE|RATIO|NON_ADDITIVE)$",
+          "title": "Additivity",
+          "type": "string"
+        },
+        "formula": {
+          "title": "Formula",
+          "type": "string"
+        },
+        "denominator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Denominator"
+        },
+        "null_policy": {
+          "default": "NOT_APPLICABLE",
+          "title": "Null Policy",
+          "type": "string"
+        },
+        "platform": {
+          "default": "*",
+          "title": "Platform",
+          "type": "string"
+        },
+        "source_mapping": {
+          "default": "",
+          "title": "Source Mapping",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "concept_uri": {
+          "default": "",
+          "title": "Concept Uri",
+          "type": "string"
+        },
+        "synonyms": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Synonyms",
+          "type": "array"
+        },
+        "probe_sql_template": {
+          "default": "",
+          "title": "Probe Sql Template",
+          "type": "string"
+        },
+        "quality_tests": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Quality Tests",
+          "type": "array"
+        },
+        "effective_from": {
+          "default": "",
+          "title": "Effective From",
+          "type": "string"
+        },
+        "breaking_change": {
+          "default": false,
+          "title": "Breaking Change",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "metric_code",
+        "display_name",
+        "version",
+        "unit",
+        "precision",
+        "additivity",
+        "formula"
+      ],
+      "title": "MetricCardFileSpec",
+      "type": "object"
+    }
+  }
+}

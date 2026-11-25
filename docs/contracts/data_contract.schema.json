@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DataContract 数据合同契约（模块 provides）",
+  "kernel_api": "1.0",
+  "types": {
+    "DataContractSpec": {
+      "additionalProperties": false,
+      "description": "DataContract 贡献的结构（表 9-15 / S5 数据合同）。",
+      "properties": {
+        "dataset": {
+          "maxLength": 96,
+          "minLength": 1,
+          "title": "Dataset",
+          "type": "string"
+        },
+        "version": {
+          "default": "1",
+          "maxLength": 16,
+          "title": "Version",
+          "type": "string"
+        },
+        "platform": {
+          "default": "",
+          "title": "Platform",
+          "type": "string"
+        },
+        "required_fields": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Required Fields",
+          "type": "array"
+        },
+        "enum_sets": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Enum Sets",
+          "type": "object"
+        },
+        "quality_tests": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Quality Tests",
+          "type": "array"
+        },
+        "api_version": {
+          "default": "",
+          "title": "Api Version",
+          "type": "string"
+        },
+        "owner": {
+          "default": "studio",
+          "title": "Owner",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset"
+      ],
+      "title": "DataContractSpec",
+      "type": "object"
+    }
+  }
+}

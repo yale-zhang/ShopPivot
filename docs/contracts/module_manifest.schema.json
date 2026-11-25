@@ -1,0 +1,346 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ModuleManifest 契约（modules/*/manifest.py）",
+  "kernel_api": "1.0",
+  "types": {
+    "ModuleManifest": {
+      "$defs": {
+        "CapabilityRequirement": {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "capability",
+              "default": "capability",
+              "enum": [
+                "capability"
+              ],
+              "title": "Kind",
+              "type": "string"
+            },
+            "name": {
+              "maxLength": 48,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "title": "CapabilityRequirement",
+          "type": "object"
+        },
+        "Contribution": {
+          "additionalProperties": false,
+          "description": "一条扩展点贡献：kind + 稳定 ID + 配置（工厂/文件/参数）。",
+          "properties": {
+            "kind": {
+              "$ref": "#/$defs/ContributionKind"
+            },
+            "id": {
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Id",
+              "type": "string"
+            },
+            "config": {
+              "title": "Config",
+              "type": "object"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "title": "Contribution",
+          "type": "object"
+        },
+        "ContributionKind": {
+          "enum": [
+            "ScenePackage",
+            "PlatformAdapter",
+            "MetricCard",
+            "GateRule",
+            "WorkerCapability",
+            "WorkbenchCard",
+            "NotificationTemplate",
+            "DataContract",
+            "Component",
+            "Permission",
+            "HealthCheck",
+            "CQ",
+            "WriteAction",
+            "SemanticConcept"
+          ],
+          "title": "ContributionKind",
+          "type": "string"
+        },
+        "CredentialScope": {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "credential_scope",
+              "default": "credential_scope",
+              "enum": [
+                "credential_scope"
+              ],
+              "title": "Kind",
+              "type": "string"
+            },
+            "scope": {
+              "maxLength": 96,
+              "minLength": 1,
+              "title": "Scope",
+              "type": "string"
+            }
+          },
+          "required": [
+            "scope"
+          ],
+          "title": "CredentialScope",
+          "type": "object"
+        },
+        "DataContractRequirement": {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "data_contract",
+              "default": "data_contract",
+              "enum": [
+                "data_contract"
+              ],
+              "title": "Kind",
+              "type": "string"
+            },
+            "dataset": {
+              "maxLength": 96,
+              "minLength": 1,
+              "title": "Dataset",
+              "type": "string"
+            },
+            "version": {
+              "maxLength": 16,
+              "minLength": 1,
+              "title": "Version",
+              "type": "string"
+            }
+          },
+          "required": [
+            "dataset",
+            "version"
+          ],
+          "title": "DataContractRequirement",
+          "type": "object"
+        },
+        "GateLevel": {
+          "enum": [
+            "L0",
+            "L1",
+            "L2",
+            "L3"
+          ],
+          "title": "GateLevel",
+          "type": "string"
+        },
+        "Hooks": {
+          "additionalProperties": false,
+          "properties": {
+            "on_install": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "On Install"
+            },
+            "on_upgrade": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "On Upgrade"
+            },
+            "on_uninstall": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "On Uninstall"
+            },
+            "on_startup": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "On Startup"
+            }
+          },
+          "title": "Hooks",
+          "type": "object"
+        },
+        "ModuleCategory": {
+          "enum": [
+            "core",
+            "capability",
+            "adapter",
+            "business",
+            "bundle"
+          ],
+          "title": "ModuleCategory",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        },
+        "category": {
+          "$ref": "#/$defs/ModuleCategory"
+        },
+        "depends": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Depends",
+          "type": "array"
+        },
+        "api_compat": {
+          "default": ">=1.0,<2.0",
+          "title": "Api Compat",
+          "type": "string"
+        },
+        "gate_level_max": {
+          "$ref": "#/$defs/GateLevel",
+          "default": "L0"
+        },
+        "requires": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/CapabilityRequirement"
+              },
+              {
+                "$ref": "#/$defs/CredentialScope"
+              },
+              {
+                "$ref": "#/$defs/DataContractRequirement"
+              }
+            ]
+          },
+          "title": "Requires",
+          "type": "array"
+        },
+        "provides": {
+          "items": {
+            "$ref": "#/$defs/Contribution"
+          },
+          "title": "Provides",
+          "type": "array"
+        },
+        "scenes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Scenes",
+          "type": "array"
+        },
+        "data": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Data",
+          "type": "array"
+        },
+        "config_namespace": {
+          "default": "",
+          "title": "Config Namespace",
+          "type": "string"
+        },
+        "table_prefix": {
+          "default": "",
+          "title": "Table Prefix",
+          "type": "string"
+        },
+        "hooks": {
+          "$ref": "#/$defs/Hooks"
+        },
+        "migrations": {
+          "default": "migrations/",
+          "title": "Migrations",
+          "type": "string"
+        },
+        "health_checks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Health Checks",
+          "type": "array"
+        },
+        "cq": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Cq",
+          "type": "array"
+        },
+        "license": {
+          "default": "MIT",
+          "title": "License",
+          "type": "string"
+        },
+        "owner": {
+          "default": "studio",
+          "title": "Owner",
+          "type": "string"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "auto_install": {
+          "default": false,
+          "title": "Auto Install",
+          "type": "boolean"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "category"
+      ],
+      "title": "ModuleManifest",
+      "type": "object"
+    }
+  }
+}

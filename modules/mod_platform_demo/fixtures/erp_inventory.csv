@@ -1,0 +1,6 @@
+sku,available,snapshot_at
+SKU-A,100,{D0}T06:00:00
+SKU-B,30,{D0}T06:00:00
+SKU-C,45,{D0}T06:00:00
+SKU-D,0,{D0}T06:00:00
+SKU-E,150,{D0}T06:00:00

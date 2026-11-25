@@ -1,0 +1,18 @@
+metric_code: example_metric
+display_name: 示例指标
+version: "1.0"
+display_order: 900
+unit: "次"
+precision: 0
+additivity: ADDITIVE
+formula: "example_fact"
+null_policy: NO_DATA
+platform: "*"
+source_mapping: "demo.example_fact"
+description: "模板口径卡：替换为真实指标后删除本行"
+concept_uri: "concept.example"
+synonyms: ["示例"]
+probe_sql_template: "SELECT value FROM dws_daily_metric WHERE metric_code = 'example_metric'"
+quality_tests: ["非负"]
+effective_from: "2026-11-01"
+breaking_change: false

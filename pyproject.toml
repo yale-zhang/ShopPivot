@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shoppivot"
+version = "0.1.0"
+description = "店枢 ShopPivot - RPA 电商自动化运营平台（M0 最小原型）"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.8",
+    "pydantic-settings>=2.4",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "celery>=5.4",
+    "redis>=5.0",
+    "httpx>=0.27",
+    "openpyxl>=3.1",
+    "pyjwt>=2.9",
+    "pyyaml>=6.0",
+    "packaging>=24",
+    "prometheus-client>=0.20",
+]
+
+[project.optional-dependencies]
+postgres = ["psycopg[binary]>=3.2"]
+dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6", "mypy>=1.11"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+    "integration: 需要数据库/对象存储的集成测试",
+    "e2e: 端到端测试",
+]
+filterwarnings = ["ignore::DeprecationWarning"]
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "modules", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501", "B008"]
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src:."
+packages = ["shared", "kernel"]
+strict = true
+ignore_missing_imports = true
+disable_error_code = ["import-untyped"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

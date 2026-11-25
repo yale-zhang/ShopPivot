@@ -1,0 +1,4 @@
+role,capability,note
+OWNER,*,全部权限（含模块装卸、审计、原文证据）
+EDITOR,"view_workbench,export_report,approve_l2,trigger_run,manage_subscriptions",运营/开发
+VIEWER,"view_workbench,export_report",只读

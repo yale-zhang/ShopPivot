@@ -1,0 +1,18 @@
+metric_code: pv
+display_name: 浏览量 PV
+version: "1.0"
+display_order: 20
+unit: "次"
+precision: 0
+additivity: ADDITIVE
+formula: "pv"
+null_policy: NO_DATA
+platform: "*"
+source_mapping: "dwd_traffic.pv"
+description: "页面浏览次数"
+concept_uri: "concept.pv"
+synonyms: ["浏览量"]
+probe_sql_template: "SELECT value FROM dws_daily_metric WHERE run_id = :run_id AND metric_code = 'pv'"
+quality_tests: ["非负"]
+effective_from: "2026-11-01"
+breaking_change: false

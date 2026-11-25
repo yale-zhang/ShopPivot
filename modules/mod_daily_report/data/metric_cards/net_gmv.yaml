@@ -1,0 +1,18 @@
+metric_code: net_gmv
+display_name: 退款后 GMV
+version: "1.0"
+display_order: 60
+unit: "元"
+precision: 2
+additivity: ADDITIVE
+formula: "gmv - refund_amount"
+null_policy: PENDING
+platform: "*"
+source_mapping: "计算列"
+description: "GMV − 当期退款"
+concept_uri: "concept.net_gmv"
+synonyms: ["净销售额"]
+probe_sql_template: "SELECT value FROM dws_daily_metric WHERE run_id = :run_id AND metric_code = 'net_gmv'"
+quality_tests: ["与 GMV/退款勾稽"]
+effective_from: "2026-11-01"
+breaking_change: false

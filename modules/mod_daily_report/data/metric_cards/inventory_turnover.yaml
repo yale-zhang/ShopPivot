@@ -1,0 +1,18 @@
+metric_code: inventory_turnover
+display_name: 库存周转（京东自营）
+version: "1.0"
+display_order: 120
+unit: "次/天"
+precision: 2
+additivity: NON_ADDITIVE
+formula: "inventory_turnover"
+null_policy: NOT_SUPPORTED
+platform: "*"
+source_mapping: "erp/wms"
+description: "按平台口径卡单独配置，非京东店铺显示 —"
+concept_uri: "concept.inventory_turnover"
+synonyms: ["周转"]
+probe_sql_template: "SELECT value FROM dws_daily_metric WHERE run_id = :run_id AND metric_code = 'inventory_turnover'"
+quality_tests: ["仅京东店铺适用"]
+effective_from: "2026-11-01"
+breaking_change: false

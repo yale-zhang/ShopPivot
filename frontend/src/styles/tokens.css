@@ -1,0 +1,92 @@
+/* 店枢 ShopPivot · 设计令牌
+ * 克制、信息密度高的后台工具；4px 圆角、1px 边框、无渐变。 */
+:root {
+  /* 品牌与语义色 */
+  --sp-primary: #14505c;
+  --sp-primary-hover: #1b6675;
+  --sp-primary-active: #0f3f49;
+  --sp-primary-soft: #e8f0f2;
+  --sp-primary-soft-strong: #d3e3e7;
+  --sp-bg: #f5f7f8;
+  --sp-surface: #ffffff;
+  --sp-surface-sunken: #eef2f3;
+  --sp-surface-raised: #ffffff;
+  --sp-border: #d7dee2;
+  --sp-border-strong: #b8c5ca;
+  --sp-text: #1f2a30;
+  --sp-muted: #5c6b73;
+  --sp-faint: #84939a;
+  --sp-success: #2e7d5b;
+  --sp-warning: #b26a00;
+  --sp-danger: #b3261e;
+  --sp-info: #2f5d8a;
+  --sp-readonly: #6b7a80;
+
+  --sp-success-soft: #eaf4ef;
+  --sp-success-border: #bcd9ca;
+  --sp-warning-soft: #fbf2e4;
+  --sp-warning-border: #e6cfa6;
+  --sp-danger-soft: #fbeeec;
+  --sp-danger-border: #e6bdb8;
+  --sp-info-soft: #eaf1f8;
+  --sp-info-border: #c2d4e6;
+  --sp-readonly-soft: #eef1f2;
+  --sp-readonly-border: #d3dadd;
+
+  /* 形状 */
+  --sp-radius: 4px;
+  --sp-radius-sm: 2px;
+  --sp-radius-pill: 999px;
+
+  /* 字体 */
+  --sp-font:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+  --sp-font-mono:
+    'SFMono-Regular', 'SF Mono', ui-monospace, Menlo, Consolas, 'Liberation Mono', monospace;
+
+  /* 尺寸 */
+  --sp-header-height: 58px;
+  --sp-status-height: 34px;
+  --sp-nav-width: 224px;
+  --sp-content-max: 1560px;
+  --sp-gap: 16px;
+  --sp-gap-sm: 10px;
+  --sp-gap-lg: 24px;
+
+  /* 阴影（仅浮层使用，无光晕） */
+  --sp-shadow-drawer: -10px 0 28px rgba(31, 42, 48, 0.14);
+  --sp-shadow-modal: 0 12px 36px rgba(31, 42, 48, 0.18);
+  --sp-shadow-toast: 0 6px 20px rgba(31, 42, 48, 0.12);
+  --sp-focus: 0 0 0 2px rgba(20, 80, 92, 0.18);
+
+  /* Element Plus 变量映射 */
+  --el-color-primary: var(--sp-primary);
+  --el-color-primary-light-3: #3f7580;
+  --el-color-primary-light-5: #7ba0a8;
+  --el-color-primary-light-7: #b3c8cc;
+  --el-color-primary-light-8: #ccdadd;
+  --el-color-primary-light-9: var(--sp-primary-soft);
+  --el-color-primary-dark-2: var(--sp-primary-active);
+  --el-color-success: var(--sp-success);
+  --el-color-warning: var(--sp-warning);
+  --el-color-danger: var(--sp-danger);
+  --el-color-error: var(--sp-danger);
+  --el-color-info: var(--sp-info);
+  --el-border-radius-base: var(--sp-radius);
+  --el-border-radius-small: var(--sp-radius-sm);
+  --el-border-color: var(--sp-border);
+  --el-border-color-light: var(--sp-border);
+  --el-border-color-lighter: #e3e9eb;
+  --el-text-color-primary: var(--sp-text);
+  --el-text-color-regular: var(--sp-text);
+  --el-text-color-secondary: var(--sp-muted);
+  --el-text-color-placeholder: var(--sp-faint);
+  --el-font-size-base: 13px;
+  --el-font-family: var(--sp-font);
+  --el-bg-color: var(--sp-surface);
+  --el-bg-color-page: var(--sp-bg);
+  --el-fill-color-light: var(--sp-surface-sunken);
+  --el-fill-color-blank: var(--sp-surface);
+  --el-box-shadow-light: 0 4px 16px rgba(31, 42, 48, 0.1);
+}

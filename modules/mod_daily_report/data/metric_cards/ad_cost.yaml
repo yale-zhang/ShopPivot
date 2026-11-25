@@ -1,0 +1,18 @@
+metric_code: ad_cost
+display_name: 广告花费
+version: "1.0"
+display_order: 90
+unit: "元"
+precision: 2
+additivity: ADDITIVE
+formula: "ad_cost"
+null_policy: PENDING
+platform: "*"
+source_mapping: "dwd_ad.cost"
+description: "推广报表花费"
+concept_uri: "concept.ad_cost"
+synonyms: ["投放花费"]
+probe_sql_template: "SELECT value FROM dws_daily_metric WHERE run_id = :run_id AND metric_code = 'ad_cost'"
+quality_tests: ["与平台账单核对"]
+effective_from: "2026-11-01"
+breaking_change: false

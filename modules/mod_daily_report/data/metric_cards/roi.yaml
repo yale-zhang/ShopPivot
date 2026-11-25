@@ -1,0 +1,18 @@
+metric_code: roi
+display_name: 投产比
+version: "1.0"
+display_order: 100
+unit: "比值"
+precision: 2
+additivity: RATIO
+formula: "attributed_revenue / ad_cost"
+null_policy: NOT_APPLICABLE
+platform: "*"
+source_mapping: "dwd_ad"
+description: "归因成交 / 广告花费；归因窗口不一致时标注版本"
+concept_uri: "concept.roi"
+synonyms: ["ROI"]
+probe_sql_template: "SELECT value FROM dws_daily_metric WHERE run_id = :run_id AND metric_code = 'roi'"
+quality_tests: ["不可加", "零花费不适用"]
+effective_from: "2026-11-01"
+breaking_change: false

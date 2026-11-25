@@ -1,0 +1,135 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: shoppivot
+      POSTGRES_PASSWORD: shoppivot
+      POSTGRES_DB: shoppivot
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shoppivot -d shoppivot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    environment:
+      SHOPPIVOT_ENV: dev
+      SHOPPIVOT_DATABASE_URL: postgresql+psycopg2://shoppivot:shoppivot@postgres:5432/shoppivot
+      SHOPPIVOT_REDIS_URL: redis://redis:6379/0
+      SHOPPIVOT_STORAGE_DIR: /data/storage
+      SHOPPIVOT_EXPORT_DIR: /data/exports
+      SHOPPIVOT_MODULES_DIR: /app/modules
+      SHOPPIVOT_PLATFORM_SOURCE: demo
+      SHOPPIVOT_PLATFORM: demo
+      SHOPPIVOT_JWT_SECRET: ${SHOPPIVOT_JWT_SECRET:-dev-only-change-me-32-bytes-minimum}
+    command:
+      - sh
+      - -c
+      - >-
+        python -m alembic -c migrations/alembic.ini upgrade head &&
+        python -m bootstrap.cli seed &&
+        uvicorn bootstrap.api:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - storage:/data/storage
+      - exports:/data/exports
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://127.0.0.1:8000/api/v1/healthz', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  worker:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    environment:
+      SHOPPIVOT_API_URL: http://api:8000
+      SHOPPIVOT_WORKER_TOKEN: /data/storage/worker.token
+      SHOPPIVOT_STORAGE_DIR: /data/storage
+    command: ["python", "-m", "worker.main", "--interval", "30"]
+    volumes:
+      - storage:/data/storage
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # 定时任务：S01 日报 + L2 超时作废。M0 不依赖 celery 也能用 CLI 跑，容器化后由这里承担。
+  beat:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    environment:
+      SHOPPIVOT_DATABASE_URL: postgresql+psycopg2://shoppivot:shoppivot@postgres:5432/shoppivot
+      SHOPPIVOT_REDIS_URL: redis://redis:6379/0
+      SHOPPIVOT_STORAGE_DIR: /data/storage
+      SHOPPIVOT_MODULES_DIR: /app/modules
+      SHOPPIVOT_PLATFORM_SOURCE: demo
+      SHOPPIVOT_PLATFORM: demo
+      SHOPPIVOT_TIMEZONE: Asia/Shanghai
+    command: ["celery", "-A", "bootstrap.celery_app:app", "worker", "--beat", "--loglevel", "INFO"]
+    volumes:
+      - storage:/data/storage
+    depends_on:
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+    ports:
+      - "8080:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # 业务编排面（M1）：默认不启动，`docker compose --profile n8n up -d` 时启用。
+  # 画布只允许只读/建议 token，命令白名单见 /api/v1/n8n/command。
+  n8n:
+    image: n8nio/n8n:latest
+    profiles: ["n8n"]
+    ports:
+      - "5678:5678"
+    environment:
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+      N8N_SECURE_COOKIE: "false"
+      GENERIC_TIMEZONE: Asia/Shanghai
+      TZ: Asia/Shanghai
+    volumes:
+      - n8ndata:/home/node/.n8n
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  storage:
+  exports:
+  n8ndata:

@@ -1,0 +1,18 @@
+metric_code: refund_amount
+display_name: 退款金额
+version: "1.0"
+display_order: 50
+unit: "元"
+precision: 2
+additivity: ADDITIVE
+formula: "refund_amount"
+null_policy: PENDING
+platform: "*"
+source_mapping: "dwd_order.refund_amount"
+description: "当期退款金额；退款接口缺失时整列待补"
+concept_uri: "concept.refund_amount"
+synonyms: ["退款"]
+probe_sql_template: "SELECT value FROM dws_daily_metric WHERE run_id = :run_id AND metric_code = 'refund_amount'"
+quality_tests: ["非负"]
+effective_from: "2026-11-01"
+breaking_change: false

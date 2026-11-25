@@ -1,0 +1,18 @@
+metric_code: gmv
+display_name: 支付金额 GMV
+version: "1.0"
+display_order: 40
+unit: "元"
+precision: 2
+additivity: ADDITIVE
+formula: "gmv"
+null_policy: NO_DATA
+platform: "*"
+source_mapping: "dwd_order.paid_amount"
+description: "支付成功订单金额合计"
+concept_uri: "concept.gmv"
+synonyms: ["销售额"]
+probe_sql_template: "SELECT value FROM dws_daily_metric WHERE run_id = :run_id AND metric_code = 'gmv'"
+quality_tests: ["非负", "与平台账单核对"]
+effective_from: "2026-11-01"
+breaking_change: false

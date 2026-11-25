@@ -1,0 +1,755 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Worker API 契约（kernel api 1.0）",
+  "kernel_api": "1.0",
+  "types": {
+    "JobStartRequest": {
+      "$defs": {
+        "TriggerType": {
+          "enum": [
+            "SCHEDULE",
+            "EVENT",
+            "MANUAL"
+          ],
+          "title": "TriggerType",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "app_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "App Id",
+          "type": "string"
+        },
+        "scene": {
+          "pattern": "^S\\d{2}$",
+          "title": "Scene",
+          "type": "string"
+        },
+        "platform": {
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Platform",
+          "type": "string"
+        },
+        "shop_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Shop Id",
+          "type": "string"
+        },
+        "window_start": {
+          "format": "date",
+          "title": "Window Start",
+          "type": "string"
+        },
+        "window_end": {
+          "format": "date",
+          "title": "Window End",
+          "type": "string"
+        },
+        "trigger_type": {
+          "$ref": "#/$defs/TriggerType",
+          "default": "MANUAL"
+        },
+        "config_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Config Ref"
+        },
+        "idempotency_key": {
+          "maxLength": 200,
+          "minLength": 3,
+          "title": "Idempotency Key",
+          "type": "string"
+        },
+        "requested_by": {
+          "default": "system",
+          "maxLength": 64,
+          "title": "Requested By",
+          "type": "string"
+        }
+      },
+      "required": [
+        "app_id",
+        "scene",
+        "platform",
+        "shop_id",
+        "window_start",
+        "window_end",
+        "idempotency_key"
+      ],
+      "title": "JobStartRequest",
+      "type": "object"
+    },
+    "JobStartResponse": {
+      "$defs": {
+        "JobStatus": {
+          "enum": [
+            "CREATED",
+            "RUNNING",
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELLED"
+          ],
+          "title": "JobStatus",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/JobStatus"
+        },
+        "accepted_at": {
+          "format": "date-time",
+          "title": "Accepted At",
+          "type": "string"
+        },
+        "deduplicated": {
+          "default": false,
+          "title": "Deduplicated",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "run_id",
+        "status",
+        "accepted_at"
+      ],
+      "title": "JobStartResponse",
+      "type": "object"
+    },
+    "JobQueryResponse": {
+      "$defs": {
+        "GateLevel": {
+          "enum": [
+            "L0",
+            "L1",
+            "L2",
+            "L3"
+          ],
+          "title": "GateLevel",
+          "type": "string"
+        },
+        "JobStatus": {
+          "enum": [
+            "CREATED",
+            "RUNNING",
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELLED"
+          ],
+          "title": "JobStatus",
+          "type": "string"
+        },
+        "NodeExecutionView": {
+          "additionalProperties": false,
+          "properties": {
+            "node_id": {
+              "title": "Node Id",
+              "type": "string"
+            },
+            "status": {
+              "$ref": "#/$defs/NodeStatus"
+            },
+            "cost_ms": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Cost Ms"
+            },
+            "err_code": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Err Code"
+            },
+            "err_layer": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Err Layer"
+            }
+          },
+          "required": [
+            "node_id",
+            "status"
+          ],
+          "title": "NodeExecutionView",
+          "type": "object"
+        },
+        "NodeStatus": {
+          "enum": [
+            "PENDING",
+            "RUNNING",
+            "SUCCEEDED",
+            "FAILED",
+            "SKIPPED"
+          ],
+          "title": "NodeStatus",
+          "type": "string"
+        },
+        "TriggerType": {
+          "enum": [
+            "SCHEDULE",
+            "EVENT",
+            "MANUAL"
+          ],
+          "title": "TriggerType",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "app_id": {
+          "title": "App Id",
+          "type": "string"
+        },
+        "scene": {
+          "title": "Scene",
+          "type": "string"
+        },
+        "platform": {
+          "title": "Platform",
+          "type": "string"
+        },
+        "shop_id": {
+          "title": "Shop Id",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/JobStatus"
+        },
+        "trigger_type": {
+          "$ref": "#/$defs/TriggerType"
+        },
+        "started_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Started At"
+        },
+        "ended_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ended At"
+        },
+        "config_snapshot_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Config Snapshot Hash"
+        },
+        "gate_level_max": {
+          "$ref": "#/$defs/GateLevel",
+          "default": "L0"
+        },
+        "nodes": {
+          "items": {
+            "$ref": "#/$defs/NodeExecutionView"
+          },
+          "title": "Nodes",
+          "type": "array"
+        },
+        "report_refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Report Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "run_id",
+        "app_id",
+        "scene",
+        "platform",
+        "shop_id",
+        "status",
+        "trigger_type"
+      ],
+      "title": "JobQueryResponse",
+      "type": "object"
+    },
+    "SuggestRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "scope": {
+          "default": "",
+          "title": "Scope",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id"
+      ],
+      "title": "SuggestRequest",
+      "type": "object"
+    },
+    "SuggestResponse": {
+      "$defs": {
+        "GateLevel": {
+          "enum": [
+            "L0",
+            "L1",
+            "L2",
+            "L3"
+          ],
+          "title": "GateLevel",
+          "type": "string"
+        },
+        "ProposalItem": {
+          "additionalProperties": false,
+          "properties": {
+            "target": {
+              "title": "Target",
+              "type": "string"
+            },
+            "before": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Before"
+            },
+            "after": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "After"
+            },
+            "impact": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Impact"
+            },
+            "evidence_ref": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Evidence Ref"
+            }
+          },
+          "required": [
+            "target"
+          ],
+          "title": "ProposalItem",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "gate_level": {
+          "$ref": "#/$defs/GateLevel"
+        },
+        "proposals": {
+          "items": {
+            "$ref": "#/$defs/ProposalItem"
+          },
+          "title": "Proposals",
+          "type": "array"
+        },
+        "impact_scope": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Impact Scope"
+        },
+        "evidence_refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "run_id",
+        "gate_level"
+      ],
+      "title": "SuggestResponse",
+      "type": "object"
+    },
+    "WriteRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {
+          "title": "Task Id",
+          "type": "string"
+        },
+        "token": {
+          "title": "Token",
+          "type": "string"
+        },
+        "change_order_no": {
+          "title": "Change Order No",
+          "type": "string"
+        },
+        "confirmed_values": {
+          "items": {
+            "type": "object"
+          },
+          "title": "Confirmed Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "task_id",
+        "token",
+        "change_order_no"
+      ],
+      "title": "WriteRequest",
+      "type": "object"
+    },
+    "WriteResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted": {
+          "title": "Accepted",
+          "type": "boolean"
+        },
+        "task_id": {
+          "title": "Task Id",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "accepted",
+        "task_id",
+        "message"
+      ],
+      "title": "WriteResponse",
+      "type": "object"
+    },
+    "CallbackRequest": {
+      "$defs": {
+        "Channel": {
+          "description": "三级取数通道（表 4-5）。",
+          "enum": [
+            "OPEN_API",
+            "BACKEND_EXPORT",
+            "GUI_FALLBACK"
+          ],
+          "title": "Channel",
+          "type": "string"
+        },
+        "NodeStatus": {
+          "enum": [
+            "PENDING",
+            "RUNNING",
+            "SUCCEEDED",
+            "FAILED",
+            "SKIPPED"
+          ],
+          "title": "NodeStatus",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "node_id": {
+          "title": "Node Id",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/NodeStatus"
+        },
+        "cost_ms": {
+          "default": 0,
+          "title": "Cost Ms",
+          "type": "integer"
+        },
+        "err_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Err Code"
+        },
+        "err_layer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Err Layer"
+        },
+        "payload_digest": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Payload Digest"
+        },
+        "outputs": {
+          "items": {
+            "type": "object"
+          },
+          "title": "Outputs",
+          "type": "array"
+        },
+        "screenshot_refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Screenshot Refs",
+          "type": "array"
+        },
+        "channel": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Channel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "run_id",
+        "node_id",
+        "status"
+      ],
+      "title": "CallbackRequest",
+      "type": "object"
+    },
+    "HeartbeatRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "worker_id": {
+          "title": "Worker Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "HEADLESS",
+            "DESKTOP"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "status": {
+          "default": "ONLINE",
+          "enum": [
+            "ONLINE",
+            "BUSY",
+            "OFFLINE"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Capabilities",
+          "type": "array"
+        },
+        "queue_depth": {
+          "default": 0,
+          "title": "Queue Depth",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "worker_id",
+        "kind"
+      ],
+      "title": "HeartbeatRequest",
+      "type": "object"
+    },
+    "CapabilitiesResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "worker_id": {
+          "title": "Worker Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "HEADLESS",
+            "DESKTOP"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Capabilities",
+          "type": "array"
+        },
+        "kernel_api": {
+          "title": "Kernel Api",
+          "type": "string"
+        }
+      },
+      "required": [
+        "worker_id",
+        "kind",
+        "capabilities",
+        "kernel_api"
+      ],
+      "title": "CapabilitiesResponse",
+      "type": "object"
+    },
+    "ErrorEnvelope": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "layer": {
+          "title": "Layer",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "user_message": {
+          "title": "User Message",
+          "type": "string"
+        },
+        "retryable": {
+          "title": "Retryable",
+          "type": "boolean"
+        },
+        "details": {
+          "title": "Details",
+          "type": "object"
+        }
+      },
+      "required": [
+        "code",
+        "layer",
+        "message",
+        "user_message",
+        "retryable"
+      ],
+      "title": "ErrorEnvelope",
+      "type": "object"
+    }
+  }
+}

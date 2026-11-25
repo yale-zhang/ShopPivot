@@ -1,0 +1,18 @@
+metric_code: uv
+display_name: 访客数 UV
+version: "1.0"
+display_order: 10
+unit: "人"
+precision: 0
+additivity: ADDITIVE
+formula: "uv"
+null_policy: NO_DATA
+platform: "*"
+source_mapping: "dwd_traffic.uv"
+description: "去重访客数，口径按平台分别列示"
+concept_uri: "concept.uv"
+synonyms: ["访客", "UV"]
+probe_sql_template: "SELECT value FROM dws_daily_metric WHERE run_id = :run_id AND metric_code = 'uv'"
+quality_tests: ["非负", "与后台导出核对"]
+effective_from: "2026-11-01"
+breaking_change: false
