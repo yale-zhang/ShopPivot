@@ -193,3 +193,30 @@ HTTP 冒烟（临时 API 8040 + Vite 5210，已完成关闭）：
 - 创建 S03 计划时前端显式传 `scene:"S03"`，避免后端默认 S02。
 - P07 带「重置」筛选与可聚焦的变更单号按钮（可访问性增强）。
 - 仍未做浏览器级 Playwright；当前为 44 条组件测试 + HTTP 冒烟。
+
+---
+
+# M3 前端追加（P08 对账与差异）
+
+## 新增
+- P08 `/p08`：账期窗口、期望净额/已结算/差异合计/差异条数 KPI、类型过滤（全部/一致/金额差异/缺结算单/缺订单，带计数）、差异表（订单号、期望、结算、佣金、差异、类型、双边凭据）、右侧只读抽屉、底部 `note` 常驻。
+- 金额 2 位 + 千分位；null 显示「—」；差异正数 `+`/warning，负数 `-`/danger；空态用接口 `empty_copy`「无差异」，KPI 显示 `—`。
+- 页面无任何回写/平账/财务确认按钮，明确「财务写入 L3 禁止自动化」。
+
+## 验证结果
+
+```text
+cd frontend
+pnpm build   # vue-tsc + vite build 通过
+pnpm test
+  errors 2 / copy 7 / states 6 / m1 11 / m2 8 / p04 3 / p07 7 / p08 4
+  Test Files 8 passed / Tests 48 passed
+```
+
+HTTP 冒烟（临时 API 8050 + Vite 5220，已完成关闭）：
+- `/settlement/reconciliation`：4 条差异（MATCH/AMOUNT_DIFF/MISSING_SETTLEMENT/MISSING_ORDER），totals expected 2257 / settled 2090 / delta -167；
+- `/p08` 200、`/src/pages/P08Reconciliation.vue` 200、代理 `/api/v1/healthz` 200。
+
+## 偏差
+- 类型过滤在前端本地完成（接口仍保留服务端 `diff_type` 参数）。
+- 差异 `status=OPEN` 显示「待人工认定」，未提供财务签字流程。

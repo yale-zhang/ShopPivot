@@ -799,3 +799,43 @@ export interface AuditResponse {
   items: AuditEntry[]
   filters: Record<string, unknown>
 }
+
+/* ------------------------------------------------------------------ */
+/* P08 对账与差异（S09 结算对账）                                       */
+/* ------------------------------------------------------------------ */
+
+export type SettlementDiffType =
+  | 'MATCH'
+  | 'AMOUNT_DIFF'
+  | 'MISSING_SETTLEMENT'
+  | 'MISSING_ORDER'
+  | string
+
+export interface SettlementDiff {
+  order_id: string
+  expected_net: number
+  settled_amount: number | null
+  commission: number | null
+  delta: number
+  diff_type: SettlementDiffType
+  order_ref: string
+  settlement_ref: string
+  status: string
+}
+
+export interface SettlementTotals {
+  expected: number
+  settled: number
+  delta: number
+}
+
+export interface SettlementReconciliationResponse {
+  run_id: string | null
+  window: ReportWindow | null
+  diffs: SettlementDiff[]
+  counts: Record<string, number>
+  totals: SettlementTotals
+  note: string
+  empty_copy: string
+  readonly: boolean
+}

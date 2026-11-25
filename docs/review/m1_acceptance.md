@@ -1,7 +1,7 @@
 # M1 只读试点验收记录（S05 / S07 / P02 / P03 / P10 / P11 / P12）
 
 > 状态口径同 M0：**自动化已验证** = 仓库内测试可复现；**部分** = 外部条件或人工验收未完成；**待人工** = 未取得证据前不得勾通过。
-> 复现：`PYTHONPATH=src:. python3 -m pytest -q`（当前 118 用例，含 M0/M1/M2），前端 `cd frontend && pnpm test && pnpm build`（当前 44 用例）。
+> 复现：`PYTHONPATH=src:. python3 -m pytest -q`（当前 120 用例，含 M0/M1/M2），前端 `cd frontend && pnpm test && pnpm build`（当前 48 用例）。
 
 ## 范围与闸门
 

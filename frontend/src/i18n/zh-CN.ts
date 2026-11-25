@@ -22,6 +22,7 @@ export const EMPTY_WORKERS_COPY = '暂无在线机器人'
 export const EMPTY_EXCEPTIONS_COPY = '暂无异常'
 export const EMPTY_SUBSCRIPTIONS_COPY = '暂无订阅'
 export const EMPTY_APPROVALS_COPY = '该时间窗无审批记录'
+export const EMPTY_SETTLEMENT_COPY = '无差异'
 export const RATIO_BADGE = '不可加（比率类）'
 export const NON_ADDITIVE_BADGE = '不可加'
 export const READONLY_COPY = '需审批后执行（当前只读模式）'
@@ -675,6 +676,84 @@ export const zhCN = {
         action: '动作',
         result: '结果',
         reason: '原因',
+      },
+    },
+  },
+
+  /* ------------------------------------------------------------------ */
+  /* P08 对账与差异                                                      */
+  /* ------------------------------------------------------------------ */
+
+  p08: {
+    eyebrow: 'P08 · 审批与待办',
+    title: '对账与差异',
+    description: '订单与结算单按主键对齐，差异逐条展示双边凭据；页面只读，财务认定在平台外完成。',
+    loadFailed: '对账数据加载失败',
+    refresh: '刷新对账',
+    readonlyHint: '只读',
+    financeWriteForbidden: '财务写入 L3 禁止自动化',
+    windowLabel: '账期窗口',
+    noteLabel: '说明',
+    noteFallback: '财务写入禁止（L3）；差异逐条可追溯双边凭据',
+    kpi: {
+      expected: '期望净额',
+      settled: '已结算',
+      delta: '差异合计',
+      diffs: '差异条数',
+    },
+    filters: {
+      title: '差异类型',
+      all: '全部',
+      hint: '类型过滤在本地执行，不改变服务端返回的账期合计。',
+    },
+    typeLabels: {
+      MATCH: '一致',
+      AMOUNT_DIFF: '金额差异',
+      MISSING_SETTLEMENT: '缺结算单',
+      MISSING_ORDER: '缺订单',
+    } as Record<string, string>,
+    typeOptions: ['MATCH', 'AMOUNT_DIFF', 'MISSING_SETTLEMENT', 'MISSING_ORDER'],
+    tableTitle: '对账差异',
+    tableHint: '期望净额 = 支付金额 − 退款 − 佣金；差异 = 结算金额 − 期望净额，逐条可追溯双边凭据。',
+    columns: {
+      orderId: '订单号',
+      expectedNet: '期望净额',
+      settledAmount: '结算金额',
+      commission: '佣金',
+      delta: '差异',
+      diffType: '差异类型',
+      orderRef: '订单凭据',
+      settlementRef: '结算凭据',
+    },
+    empty: EMPTY_SETTLEMENT_COPY,
+    emptyHint: '当前账期没有需要人工认定的差异。',
+    emptyFiltered: '该类型暂无差异',
+    openRow: '查看对账差异',
+    statusLabels: {
+      OPEN: '待人工认定',
+    } as Record<string, string>,
+    drawer: {
+      title: '对账差异详情',
+      subtitle: '单条差异的全部字段与账期合计',
+      close: '关闭对账差异详情',
+      summary: '差异字段',
+      totals: '账期合计',
+      note: '财务写入 L3 禁止自动化；平台不提供任何回写入口。',
+      fields: {
+        orderId: '订单号',
+        diffType: '差异类型',
+        status: '状态',
+        expectedNet: '期望净额',
+        settledAmount: '结算金额',
+        commission: '佣金',
+        delta: '差异',
+        orderRef: '订单凭据 order_ref',
+        settlementRef: '结算凭据 settlement_ref',
+      },
+      totalsFields: {
+        expected: '期望净额',
+        settled: '已结算',
+        delta: '差异合计',
       },
     },
   },

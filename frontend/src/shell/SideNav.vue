@@ -19,6 +19,7 @@ const PAGE_ROUTES: Record<string, string> = {
   P05: '/p05',
   P06: '/change-orders',
   P07: '/p07',
+  P08: '/p08',
   P09: '/p09',
   P10: '/p10',
   P11: '/p11',

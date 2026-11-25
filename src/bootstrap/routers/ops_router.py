@@ -150,6 +150,61 @@ def close_ticket(
     return {"ticket_id": ticket_id, "status": ticket.status.value}
 
 
+@router.get("/settlement/reconciliation")
+def settlement_reconciliation(
+    run_id: str | None = Query(default=None),
+    diff_type: str | None = Query(default=None),
+    container: AppContainer = Depends(get_container),
+    user=Depends(get_current_user),
+) -> dict:
+    run = None
+    if run_id:
+        run = container.runs.get(RunId.parse(run_id))
+        if run is None:
+            raise DomainError("E008", f"运行不存在: {run_id}", status_override=404)
+    else:
+        run = next(
+            (item for item in container.runs.recent(50) if item.scene == "S09"), None
+        )
+    if run is None:
+        return {
+            "run_id": None,
+            "window": None,
+            "diffs": [],
+            "counts": {},
+            "totals": {"expected": 0, "settled": 0, "delta": 0},
+            "note": "财务写入禁止（L3）；差异逐条可追溯双边凭据",
+            "empty_copy": "无差异",
+            "readonly": True,
+        }
+    diffs = container.settlements.by_run(run.run_id)
+    if diff_type:
+        diffs = [item for item in diffs if item["diff_type"] == diff_type]
+    counts: dict[str, int] = {}
+    expected = 0.0
+    settled = 0.0
+    delta = 0.0
+    for item in diffs:
+        counts[item["diff_type"]] = counts.get(item["diff_type"], 0) + 1
+        expected += item["expected_net"]
+        settled += item["settled_amount"] or 0.0
+        delta += item["delta"]
+    return {
+        "run_id": run.run_id.value,
+        "window": {"start": run.window.start.isoformat(), "end": run.window.end.isoformat()},
+        "diffs": diffs,
+        "counts": counts,
+        "totals": {
+            "expected": round(expected, 2),
+            "settled": round(settled, 2),
+            "delta": round(delta, 2),
+        },
+        "note": "财务写入禁止（L3）；差异逐条可追溯双边凭据",
+        "empty_copy": "无差异",
+        "readonly": True,
+    }
+
+
 @router.get("/ads/summary")
 def ads_summary(
     run_id: str | None = Query(default=None),

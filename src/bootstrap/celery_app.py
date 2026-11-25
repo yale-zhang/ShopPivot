@@ -36,6 +36,11 @@ app.conf.beat_schedule = {
         "schedule": crontab(minute=0, hour=11),
         "args": ("S04",),
     },
+    "settlement-recon-s09": {
+        "task": "shoppivot.run_scene",
+        "schedule": crontab(minute=0, hour=2, day_of_month=1),
+        "args": ("S09",),
+    },
     "escalate-approvals": {
         "task": "shoppivot.escalate_approvals",
         "schedule": crontab(minute="*/5"),

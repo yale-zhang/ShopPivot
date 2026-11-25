@@ -17,7 +17,7 @@ from shared.errors.registry import DomainError
 router = APIRouter(prefix="/api/v1/n8n", tags=["n8n"])
 
 ALLOWED_COMMANDS = {"job.start"}
-ALLOWED_SCENES = {"S01", "S04", "S05", "S07"}
+ALLOWED_SCENES = {"S01", "S04", "S05", "S07", "S09"}
 
 
 class N8nCommandRequest(BaseModel):

@@ -24,6 +24,7 @@ REQUIRED = {
     "M0 验收记录": ROOT / "docs/review/m0_acceptance.md",
     "M1 验收记录": ROOT / "docs/review/m1_acceptance.md",
     "M2 验收记录": ROOT / "docs/review/m2_acceptance.md",
+    "M3 验收记录": ROOT / "docs/review/m3_acceptance.md",
     "模块化复核": ROOT / "docs/review/modular_review.md",
 }
 

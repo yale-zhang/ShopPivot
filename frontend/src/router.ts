@@ -11,6 +11,7 @@ import P04Ads from './pages/P04Ads.vue'
 import P05Todos from './pages/P05Todos.vue'
 import P06ChangeOrder from './pages/P06ChangeOrder.vue'
 import P07Audit from './pages/P07Audit.vue'
+import P08Reconciliation from './pages/P08Reconciliation.vue'
 import P09Modules from './pages/P09Modules.vue'
 import P10MetricCards from './pages/P10MetricCards.vue'
 import P11Workers from './pages/P11Workers.vue'
@@ -77,6 +78,12 @@ const router = createRouter({
           name: 'p07',
           component: P07Audit,
           meta: { title: zhCN.p07.title },
+        },
+        {
+          path: 'p08',
+          name: 'p08',
+          component: P08Reconciliation,
+          meta: { title: zhCN.p08.title },
         },
         {
           path: 'p09',

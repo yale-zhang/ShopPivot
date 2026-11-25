@@ -332,7 +332,7 @@ def main(argv: list[str] | None = None) -> int:
     run_parser.set_defaults(func=cmd_run_daily)
 
     scene_parser = sub.add_parser("run-scene", help="执行指定场景（S01/S05/S07）")
-    scene_parser.add_argument("--scene", required=True, choices=["S01", "S04", "S05", "S07"])
+    scene_parser.add_argument("--scene", required=True, choices=["S01", "S04", "S05", "S07", "S09"])
     scene_parser.add_argument("--day", default=None, help="统计日 YYYY-MM-DD，默认今天")
     scene_parser.add_argument("--user", default="system")
     scene_parser.set_defaults(func=cmd_run_scene)

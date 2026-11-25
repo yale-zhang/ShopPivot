@@ -30,6 +30,7 @@ import type {
   ReviewTicketsResponse,
   RolesResponse,
   RunDetailPayload,
+  SettlementReconciliationResponse,
   SuggestionActionResponse,
   SubscriptionCreatePayload,
   SubscriptionMutationResponse,
@@ -489,6 +490,20 @@ export function ignoreInventorySuggestion(
 
 export function fetchAdsSummary(runId?: string | null): Promise<AdsSummaryResponse> {
   return request<AdsSummaryResponse>('/ads/summary', { query: { run_id: runId } })
+}
+
+/* ------------------------------------------------------------------ */
+/* P08 对账与差异                                                      */
+/* ------------------------------------------------------------------ */
+
+/** 结算对账差异；diff_type 由服务端过滤，前端也可本地过滤。 */
+export function fetchSettlementReconciliation(params: {
+  runId?: string | null
+  diffType?: string | null
+} = {}): Promise<SettlementReconciliationResponse> {
+  return request<SettlementReconciliationResponse>('/settlement/reconciliation', {
+    query: { run_id: params.runId, diff_type: params.diffType },
+  })
 }
 
 /* ------------------------------------------------------------------ */
