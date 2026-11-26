@@ -76,6 +76,7 @@ def start_job(
         requested_by=requested_by,
         idempotency_key=body.idempotency_key,
         config_ref=body.config_ref,
+        params=body.params,
     )
     result = container.pipeline(command)
     return JobStartResponse(

@@ -1,0 +1,25 @@
+id: 1688-distribution
+version: "1.4.0"
+publisher: 1688aiinfra
+trust: official
+license: MIT
+description: 1688 分销选品/商品/铺货 CLI；当前接入 sourcing.search，铺货能力留 S12。
+adapter: modules.mod_1688_ops.skill_adapter:DistributionSourcingAdapter
+entrypoints:
+  cli:
+    command: python3 scripts/cli.py
+    allowed_commands:
+      - product_search_helper.search
+limits:
+  timeout_seconds: 30
+  max_concurrency: 2
+  egress:
+    - clawhub.1688.com
+    - "*.1688.com"
+credentials: []
+config:
+  fixtures: modules/mod_1688_ops/fixtures/offers.json
+capabilities:
+  - name: sourcing.search
+    risk: L0
+    description: 1688 关键词选品，返回候选货源 JSON

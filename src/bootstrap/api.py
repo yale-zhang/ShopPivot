@@ -23,6 +23,8 @@ from bootstrap.routers.auth_router import router as auth_router
 from bootstrap.routers.job_router import router as job_router
 from bootstrap.routers.n8n_router import router as n8n_router
 from bootstrap.routers.ops_router import router as ops_router
+from bootstrap.routers.skill_router import router as skill_router
+from bootstrap.routers.sourcing_router import router as sourcing_router
 from bootstrap.routers.workbench_router import router as workbench_router
 from bootstrap.routers.write_router import router as write_router
 from bootstrap.settings import Settings, get_settings
@@ -148,6 +150,8 @@ def create_app(
     app.include_router(admin_router)
     app.include_router(n8n_router)
     app.include_router(write_router)
+    app.include_router(sourcing_router)
+    app.include_router(skill_router)
     return app
 
 

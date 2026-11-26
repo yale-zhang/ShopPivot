@@ -25,6 +25,7 @@ from kernel.contexts.metric_data.domain.ports import (
     ReportStorage,
     ReviewTicketRepository,
     SettlementRepository,
+    SourcingRepository,
     StockRepository,
 )
 from kernel.contexts.observability.domain.models import AuditEntry, AuditPort, ExceptionPort
@@ -56,6 +57,8 @@ class SceneContext:
     stock: StockRepository
     ads: AdCampaignRepository
     settlements: SettlementRepository
+    sourcing: SourcingRepository
+    skills: Any | None
     subscriptions: SubscriptionRepository | None
     notifier: NotificationService
     audit: AuditPort

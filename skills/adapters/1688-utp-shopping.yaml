@@ -1,0 +1,31 @@
+id: 1688-utp-shopping
+version: "2.4.2"
+publisher: 1688aiinfra
+trust: official
+license: MIT-0
+description: 1688 搜品/加购/checkout；HITL，支付必须人工完成。S11 采购暂未迁移到 Runtime。
+adapter: modules.mod_1688_ops.skill_adapter:UtpPurchaseAdapter
+entrypoints:
+  cli:
+    command: utp invoke
+    allowed_commands:
+      - utp_catalog_search
+      - utp_checkout_create
+      - utp_checkout_get
+limits:
+  timeout_seconds: 30
+  max_concurrency: 1
+  egress:
+    - ucp-b2b.com
+credentials:
+  - ali_1688_ak
+capabilities:
+  - name: purchase.checkout
+    risk: L2
+    description: 创建 1688 checkout；不代提交、不代付
+  - name: purchase.status
+    risk: L0
+    description: 回读 checkout 状态
+  - name: purchase.cancel
+    risk: L2
+    description: 取消未支付 checkout；真实 UTP 为 app-only，通常需人工

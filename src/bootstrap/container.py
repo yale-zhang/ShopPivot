@@ -32,6 +32,20 @@ from kernel.contexts.integration.application.notification_service import (
 from kernel.contexts.integration.domain.desensitizer import Desensitizer
 from kernel.contexts.integration.domain.fetch_strategy import FetchStrategyResolver
 from kernel.contexts.integration.infrastructure.local_storage import LocalReportStorage
+from kernel.contexts.skill.application.lifecycle import SkillLifecycleService
+from kernel.contexts.skill.application.runtime import SkillRuntime
+from kernel.contexts.skill.infrastructure.catalog import LocalSkillCatalog
+from kernel.contexts.skill.infrastructure.repositories import (
+    SqlSkillBindingRepository,
+    SqlSkillInstallationRepository,
+    SqlSkillRunRepository,
+)
+from kernel.contexts.integration.infrastructure.sourcing_providers import (
+    Mock1688SourcingProvider,
+    MockPurchaseProvider,
+    SkillCliSourcingProvider,
+    UtpPurchaseProvider,
+)
 from kernel.contexts.integration.infrastructure.repositories import (
     SqlNotificationLogRepository,
     SqlSubscriptionRepository,
@@ -48,8 +62,10 @@ from kernel.contexts.metric_data.infrastructure.repositories import (
     SqlMetricRepository,
     SqlOdsRepository,
     SqlReportRepository,
+    SqlPurchaseRepository,
     SqlReviewTicketRepository,
     SqlSettlementRepository,
+    SqlSourcingRepository,
     SqlStockRepository,
 )
 from kernel.contexts.observability.infrastructure.repositories import (
@@ -137,6 +153,16 @@ class AppContainer:
     stock: SqlStockRepository
     ads: SqlAdCampaignRepository
     settlements: SqlSettlementRepository
+    sourcing: SqlSourcingRepository
+    purchases: SqlPurchaseRepository
+    skill_catalog: Any
+    skill_runs: Any
+    skill_installations: Any
+    skill_bindings: Any
+    skill_lifecycle: Any
+    skills: Any
+    sourcing_provider: Any
+    purchase_provider: Any
     subscriptions: SqlSubscriptionRepository
     releases: SqlMetricReleaseRepository
     probes: SqlProbeRunner
@@ -182,6 +208,8 @@ class AppContainer:
             stock=self.stock,
             ads=self.ads,
             settlements=self.settlements,
+            sourcing=self.sourcing,
+            skills=self.skills,
             subscriptions=self.subscriptions,
             notifier=self.notifier,
             audit=self.audit,
@@ -223,6 +251,22 @@ def build_container(
     stock = SqlStockRepository(database)
     ads = SqlAdCampaignRepository(database)
     settlements = SqlSettlementRepository(database)
+    sourcing = SqlSourcingRepository(database)
+    purchases = SqlPurchaseRepository(database)
+    skill_runs = SqlSkillRunRepository(database)
+    skill_installations = SqlSkillInstallationRepository(database)
+    skill_bindings = SqlSkillBindingRepository(database)
+    skill_catalog = LocalSkillCatalog(settings.skills_lock_path)
+    skill_lifecycle = SkillLifecycleService(
+        skill_catalog, skill_installations, skill_bindings, settings=settings
+    )
+    skills = SkillRuntime(
+        skill_catalog,
+        skill_runs,
+        settings=settings,
+        installations=skill_installations,
+        bindings=skill_bindings,
+    )
     subscriptions = SqlSubscriptionRepository(database)
     releases = SqlMetricReleaseRepository(database)
     probes = SqlProbeRunner(database)
@@ -288,12 +332,26 @@ def build_container(
             f"已注册: {sorted(adapters)}"
         )
 
+    if settings.source_1688_mode == "cli":
+        sourcing_provider = SkillCliSourcingProvider(skill_dir=settings.skill_1688_dir)
+        purchase_provider = UtpPurchaseProvider(
+            utp_bin=settings.utp_bin, host=settings.utp_host
+        )
+    else:
+        sourcing_provider = Mock1688SourcingProvider(
+            Path(modules_dirs[0]) / "mod_1688_ops" / "fixtures" / "offers.json"
+        )
+        purchase_provider = MockPurchaseProvider()
+
     scene_configs: dict[str, dict[str, Any]] = {}
     for contribution in registry.by_kind("ScenePackage"):
         scene = str(contribution.config.get("scene", contribution.id))
         config = dict(contribution.config)
         config["_module_dir"] = str(Path(modules_dirs[0]) / contribution.module)
         scene_configs[scene] = config
+
+    if "S10" in scene_configs:
+        scene_configs["S10"]["_provider"] = sourcing_provider
 
     write_handlers: dict[str, WriteActionHandler] = {}
     state_dir = settings.storage_dir / "platform_state"
@@ -305,6 +363,11 @@ def build_container(
         config = dict(contribution.config)
         config["_state_dir"] = str(state_dir)
         config["_module_dir"] = str(Path(modules_dirs[0]) / contribution.module)
+        if config.get("action_code") == "S11.purchase_order":
+            config["_purchase_provider"] = purchase_provider
+            config["_purchases"] = purchases
+            config["_sourcing"] = sourcing
+            config["_skills"] = skills
         handler = import_object(factory)(config)
         write_handlers[handler.action_code] = handler
 
@@ -331,6 +394,7 @@ def build_container(
         dead_letters,
         notifier,
         gate=gate,
+        scene_configs=scene_configs,
     )
     container = AppContainer(
         settings=settings,
@@ -366,6 +430,16 @@ def build_container(
         stock=stock,
         ads=ads,
         settlements=settlements,
+        sourcing=sourcing,
+        purchases=purchases,
+        skill_catalog=skill_catalog,
+        skill_runs=skill_runs,
+        skill_installations=skill_installations,
+        skill_bindings=skill_bindings,
+        skill_lifecycle=skill_lifecycle,
+        skills=skills,
+        sourcing_provider=sourcing_provider,
+        purchase_provider=purchase_provider,
         subscriptions=subscriptions,
         releases=releases,
         probes=probes,
@@ -400,6 +474,7 @@ def run_scene(
     day: str | None = None,
     requested_by: str = "system",
     trigger_type: str = "MANUAL",
+    params: dict[str, object] | None = None,
 ):
     """CLI / Celery / API 共用的场景触发入口（S01/S05/S07…）。"""
     from datetime import date
@@ -411,6 +486,14 @@ def run_scene(
     config = container.scene_configs.get(scene, {})
     app_id = str(config.get("app_id") or f"app_{platform}_{scene.lower()}")
     idempotency_key = f"{scene.lower()}:{platform}:{shop_id}:{target.isoformat()}"
+    if params:
+        import hashlib
+        import json
+
+        digest = hashlib.sha256(
+            json.dumps(params, ensure_ascii=False, sort_keys=True, default=str).encode()
+        ).hexdigest()[:12]
+        idempotency_key = f"{idempotency_key}:{digest}"
     command = StartRunCommand(
         app_id=app_id,
         scene=scene,
@@ -421,6 +504,7 @@ def run_scene(
         trigger_type=trigger_type,
         requested_by=requested_by,
         idempotency_key=idempotency_key,
+        params=params,
     )
     return container.pipeline(command)
 

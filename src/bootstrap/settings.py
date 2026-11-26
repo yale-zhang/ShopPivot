@@ -31,6 +31,13 @@ class Settings(BaseSettings):
         default_factory=lambda: ["pdd:report:read", "demo:report:read"]
     )
 
+    skills_lock_path: Path = Path("skills.lock")
+    skill_publisher_allowlist: list[str] = ["1688aiinfra"]
+    source_1688_mode: str = "mock"
+    skill_1688_dir: Path = Path(".agents/skills/1688-distribution")
+    utp_bin: str = "utp"
+    utp_host: str = "https://ucp-b2b.com"
+
     daily_report_cron: str = "0 8 * * *"
     timezone: str = "Asia/Shanghai"
     redis_url: str = ""

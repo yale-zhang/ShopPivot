@@ -16,6 +16,8 @@ import P09Modules from './pages/P09Modules.vue'
 import P10MetricCards from './pages/P10MetricCards.vue'
 import P11Workers from './pages/P11Workers.vue'
 import P12Access from './pages/P12Access.vue'
+import P13Sourcing from './pages/P13Sourcing.vue'
+import P14Skills from './pages/P14Skills.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -108,6 +110,18 @@ const router = createRouter({
           name: 'p12',
           component: P12Access,
           meta: { title: zhCN.p12.title },
+        },
+        {
+          path: 'p13',
+          name: 'p13',
+          component: P13Sourcing,
+          meta: { title: zhCN.p13.title },
+        },
+        {
+          path: 'p14',
+          name: 'p14',
+          component: P14Skills,
+          meta: { title: zhCN.p14.title },
         },
       ],
     },

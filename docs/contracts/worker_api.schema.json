@@ -77,6 +77,10 @@
           "maxLength": 64,
           "title": "Requested By",
           "type": "string"
+        },
+        "params": {
+          "title": "Params",
+          "type": "object"
         }
       },
       "required": [

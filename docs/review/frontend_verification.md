@@ -220,3 +220,115 @@ HTTP 冒烟（临时 API 8050 + Vite 5220，已完成关闭）：
 ## 偏差
 - 类型过滤在前端本地完成（接口仍保留服务端 `diff_type` 参数）。
 - 差异 `status=OPEN` 显示「待人工认定」，未提供财务签字流程。
+
+---
+
+# M3 前端追加（P13 1688 选品与采购）
+
+## 新增
+- P13 `/p13`：provider 状态条、关键词选品、候选表（排名/价格/邮费/起订/30天单量/评分/风险标签）、本地筛选、数量校验、创建采购单（S11 L2）、我的采购单（状态、`continue_url` 外链、刷新状态）。
+- 常驻边界文案：「AI 只做选品建议与采购单准备；下单/支付由人在 1688/UTP 确认，系统不代付」。
+- 新增 `tests/p13.spec.ts` 6 条。
+
+## 验证结果
+
+```text
+cd frontend
+pnpm build   # vue-tsc + vite build 通过
+pnpm test
+  errors 2 / copy 7 / states 6 / m1 11 / m2 8 / p04 3 / p07 7 / p08 4 / p13 6
+  Test Files 9 passed / Tests 54 passed
+```
+
+HTTP 冒烟（临时 API 8060 + Vite 5230，已完成关闭）：
+- `POST /sourcing/search`：4 个候选，`mock-1688`；品牌未授权/无销量/需邮费风险标签正确；
+- 创建 S11 采购单 → 审批 → `VERIFIED`；采购单 `AWAITING_PAYMENT`、checkout `mockco_...`、total 85.00、`continue_url` 可打开；
+- `/p13`、`/src/pages/P13Sourcing.vue`、代理 `/api/v1/healthz` 均 200。
+
+## 偏差
+- 金额字段兼容 number/string（后端 Decimal 序列化为字符串）。
+- 搜索筛选为前端本地过滤；mock 提供方忽略 filters，真实 CLI 支持服务端 filters。
+
+---
+
+# S0 前端追加（P14 技能中心只读）
+
+## 新增
+- P14 `/p14`：只读提示条 + lock_path、4 个 KPI、Skill 表（id/版本/发布者/信任/许可/状态/能力与风险/绑定数）、右侧抽屉（adapter/entrypoints/limits/credentials 键/bindings/最近运行）、运行记录表。
+- 无安装/启用/执行/卸载/升级操作；403 无权限态；空态用接口 `empty_copy`。
+- 新增 `SkillRunTable.vue`、`tests/p14.spec.ts` 5 条。
+
+## 验证结果
+
+```text
+cd frontend
+pnpm build   # vue-tsc + vite build 通过
+pnpm test
+  errors 2 / copy 7 / states 6 / m1 11 / m2 8
+  p04 3 / p07 7 / p08 4 / p13 6 / p14 5
+  Test Files 10 passed / Tests 59 passed
+```
+
+## 偏差
+- 只读条使用 i18n 原文，未直接回显后端 note（两者语义一致）。
+- 运行记录一次拉 50 条后前端按 skill_id 过滤；client 已支持服务端参数。
+- 角色由后端 403 与 nav 控制，未新增前端路由守卫。
+
+---
+
+# S2a 前端追加（P14 技能治理）
+
+## 变更
+- P14 从只读升级为 OWNER 可治理：安装、校验、启用/停用、绑定店铺（platform/shop/priority/credential_ref）、删除绑定；二次确认与 Toast；失败展示后端 message。
+- 状态机：`adapter-only→安装`、`INSTALLED→校验/启用`、`ENABLED→校验/停用`、`DISABLED→启用`。
+- VIEWER 保持只读，不渲染治理按钮/绑定表单。
+- 新增 `SkillVerifyResult.vue`；`tests/p14.spec.ts` 扩到 10 条。
+
+## 验证结果
+
+```text
+cd frontend
+pnpm build   # vue-tsc + vite build 通过
+pnpm test
+  errors 2 / copy 7 / states 6 / m1 11 / m2 8
+  p04 3 / p07 7 / p08 4 / p13 6 / p14 10
+  Test Files 10 passed / Tests 64 passed
+```
+
+HTTP 冒烟（API 8080 + Vite 5250，已关闭）：
+- install → INSTALLED（checksum 89f0981d…）；verify ok=true；disable → DISABLED；bind demo/SHOP-0001 priority 99 credential_ref `vault://1688/demo`；enable → ENABLED；
+- `/p14`、源码、代理均 200。
+
+## 偏差
+- 原「页面无安装/启用按钮」用例改为 VIEWER 只读场景，未删除既有覆盖。
+- 绑定刷新使用 `GET /skills/{id}/bindings`；详情仅在抽屉打开时重取。
+
+---
+
+# S2b 前端追加（P14 安装包安装）
+
+## 变更
+- P14「安装」弹窗支持两种来源：`清单安装（默认）` 与 `安装包（zip）`；选择安装包时填写受控目录路径，未填不发请求。
+- 安装记录展示 `details.kind`、`package_checksum`、`package_path`、`files`。
+- 提示条更新为 `S2b：OWNER 可清单/安装包安装、校验、启停、按店绑定；UTP 真实包与凭据在后续`。
+- `tests/p14.spec.ts` 扩到 13 条。
+
+## 验证结果
+
+```text
+cd frontend
+pnpm build   # vue-tsc + vite build 通过
+pnpm test
+  errors 2 / copy 7 / states 6 / m1 11 / m2 8
+  p04 3 / p07 7 / p08 4 / p13 6 / p14 13
+  Test Files 10 passed / Tests 67 passed
+```
+
+HTTP 冒烟（API 8090 + Vite 5260，已关闭）：
+- 上传/放置 `pkg.zip` 到 `storage/skill_packages`，`POST /skills/1688-distribution/install {source:"package",package_path:"pkg.zip"}` → INSTALLED，`kind=package`、package_checksum 43c133fc…、files=2；
+- `POST /verify` → ok=true（expected=actual）；
+- `/p14` 200。
+
+## 偏差
+- 清单安装仍不传 body，安装包才传 `{source,package_path}`。
+- 安装包只落盘/校验，不执行包内脚本。

@@ -24,6 +24,8 @@ const PAGE_ROUTES: Record<string, string> = {
   P10: '/p10',
   P11: '/p11',
   P12: '/p12',
+  P13: '/p13',
+  P14: '/p14',
 }
 
 function routeFor(page: NavPage): string | null {

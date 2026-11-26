@@ -25,6 +25,8 @@ REQUIRED = {
     "M1 验收记录": ROOT / "docs/review/m1_acceptance.md",
     "M2 验收记录": ROOT / "docs/review/m2_acceptance.md",
     "M3 验收记录": ROOT / "docs/review/m3_acceptance.md",
+    "1688 集成说明": ROOT / "docs/review/m3_1688_integration.md",
+    "Skill 运行时": ROOT / "docs/review/skill_runtime.md",
     "模块化复核": ROOT / "docs/review/modular_review.md",
 }
 

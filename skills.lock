@@ -1,0 +1,23 @@
+version: 1
+updated_at: "2026-11-26"
+skills:
+  - id: 1688-distribution
+    version: "1.4.0"
+    manifest: skills/adapters/1688-distribution.yaml
+    checksum: "adapter-only"
+    status: adapter-only
+    bindings:
+      - platform: "*"
+        shop_id: "*"
+        enabled: true
+        priority: 20
+  - id: 1688-utp-shopping
+    version: "2.4.2"
+    manifest: skills/adapters/1688-utp-shopping.yaml
+    checksum: "adapter-only"
+    status: adapter-only
+    bindings:
+      - platform: "*"
+        shop_id: "*"
+        enabled: true
+        priority: 10

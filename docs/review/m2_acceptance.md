@@ -1,7 +1,7 @@
 # M2 写入闸门验收记录（L2：WritePlan → 审批 → Token → 执行 → 回查 → 归档/补偿）
 
 > 状态口径同前：**自动化已验证** = 仓库内测试可复现；**部分** = 真实平台/外部条件未满足；**未实现** = 本阶段明确不做。
-> 复现：`PYTHONPATH=src:. python3 -m pytest -q`（当前 120 用例），前端 `cd frontend && pnpm test && pnpm build`（当前 48 用例）。
+> 复现：`PYTHONPATH=src:. python3 -m pytest -q`（当前 133 用例），前端 `cd frontend && pnpm test && pnpm build`（当前 67 用例）。
 
 ## 闸门链路
 

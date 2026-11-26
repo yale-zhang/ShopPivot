@@ -6,7 +6,7 @@ run 的状态机与不变量在聚合内，用例只负责编排与持久化。
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 
 from kernel.contexts.approval.domain.gate_policy import GatePolicyService
 from kernel.contexts.integration.application.notification_service import NotificationService
@@ -42,6 +42,7 @@ class RunPipelineUseCase:
         notifier: NotificationService,
         *,
         gate: GatePolicyService,
+        scene_configs: Mapping[str, dict[str, Any]] | None = None,
     ) -> None:
         self.start_run = start_run
         self.repo = repo
@@ -53,15 +54,18 @@ class RunPipelineUseCase:
         self.dead_letters = dead_letters
         self.notifier = notifier
         self.gate = gate
+        self.scene_configs = dict(scene_configs or {})
 
     def _handler_for(self, scene: str) -> tuple[ScenePackageHandler, dict[str, Any]]:
         for contribution in self.registry.by_kind("ScenePackage"):
             if contribution.config.get("scene") == scene:
-                factory = contribution.config.get("factory")
+                config = dict(contribution.config)
+                config.update(self.scene_configs.get(scene, {}))
+                factory = config.get("factory")
                 if not factory:
                     break
                 handler_cls = import_object(factory)
-                return handler_cls(contribution.config), contribution.config
+                return handler_cls(config), config
         raise DomainError("E008", f"未找到场景 {scene} 的应用包（未安装或已禁用）")
 
     def __call__(self, cmd: StartRunCommand) -> RunPipelineResult:

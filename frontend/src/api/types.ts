@@ -839,3 +839,266 @@ export interface SettlementReconciliationResponse {
   empty_copy: string
   readonly: boolean
 }
+
+/* ------------------------------------------------------------------ */
+/* P13 · 1688 选品与采购                                               */
+/* ------------------------------------------------------------------ */
+
+/** 后端 Decimal 以字符串序列化；兼容 number 便于测试与前端计算。 */
+export type SourcingAmount = number | string
+
+export interface SourcingCandidate {
+  run_id?: string
+  keyword?: string
+  offer_id: string
+  title: string
+  price: SourcingAmount
+  post_fee: SourcingAmount
+  moq: number
+  sales_30d: number
+  supplier: string
+  pic_url: string
+  url: string
+  brand_authorized: boolean
+  landed_price?: SourcingAmount
+  score: number
+  rank: number
+  risk_flags: string[]
+  risk_label: string
+}
+
+export interface SourcingSearchRequest {
+  keyword: string
+  limit?: number
+  filters?: Array<Record<string, unknown>>
+}
+
+export interface SourcingSearchResponse {
+  run_id: string | null
+  status: 'SUCCEEDED' | 'FAILED' | string
+  keyword: string
+  candidates: SourcingCandidate[]
+  count: number
+  empty_copy: string
+  provider: string
+  err_code?: string
+  err_layer?: string
+}
+
+export interface SourcingCandidatesResponse {
+  run_id: string | null
+  keyword: string
+  candidates: SourcingCandidate[]
+  count: number
+  empty_copy: string
+  provider: string
+}
+
+export interface SourcingProviderResponse {
+  mode: 'mock' | 'cli' | string
+  sourcing_provider: string
+  purchase_provider: string
+  note: string
+}
+
+export type PurchaseStatus =
+  | 'AWAITING_CONFIRMATION'
+  | 'AWAITING_PAYMENT'
+  | 'PAID'
+  | 'CANCELLED'
+  | 'FAILED'
+  | string
+
+export interface PurchaseItem {
+  offer_id: string
+  title: string
+  quantity: number
+  unit_price: SourcingAmount
+  post_fee: SourcingAmount
+  spec_id: string
+  subtotal: SourcingAmount
+}
+
+export interface PurchaseOrder {
+  plan_id: string
+  provider: string
+  items: PurchaseItem[]
+  total: SourcingAmount
+  quantity: number
+  checkout_id: string
+  status: PurchaseStatus
+  status_label: string
+  continue_url: string
+  buyer_note: string
+  created_at: string | null
+  updated_at: string | null
+  task_id: string | null
+}
+
+export interface PurchasesResponse {
+  items: PurchaseOrder[]
+  empty_copy: string
+  readonly: boolean
+}
+
+export interface PurchaseRefreshResponse extends PurchaseOrder {
+  note: string
+}
+
+export interface PurchasePlanRow {
+  offer_id: string
+  quantity: number
+}
+
+/** P13 采购单只创建 checkout，支付必须由人在 1688/UTP 完成。 */
+export interface CreatePurchasePlanRequest {
+  action_code: 'S11.purchase_order' | string
+  platform: string
+  shop_id: string
+  rows: PurchasePlanRow[]
+  idempotency_key: string
+  scene: string
+}
+
+/* ------------------------------------------------------------------ */
+/* P14 · 技能中心（S2a：OWNER 可治理）                                  */
+/* ------------------------------------------------------------------ */
+
+export type SkillTrust = 'official' | 'verified' | 'community' | 'untrusted' | string
+
+export type SkillRisk = 'L0' | 'L1' | 'L2' | 'L3' | string
+
+/** 目录/详情返回的 Skill 状态；`adapter-only` 表示只有适配器、尚未安装。 */
+export type SkillStatus = 'adapter-only' | 'INSTALLED' | 'ENABLED' | 'DISABLED' | string
+
+export interface SkillCapability {
+  name: string
+  risk: SkillRisk
+  risk_label: string
+  description: string
+}
+
+export interface SkillBinding {
+  platform: string
+  shop_id: string
+  enabled: boolean
+  priority: number
+  /** 仅存凭据引用（如 vault://...），不含明文凭据。 */
+  credential_ref?: string
+  config?: Record<string, unknown>
+}
+
+/** 安装方式：默认按清单安装，或安装 `storage/skill_packages` 下的 zip 包。 */
+export type SkillInstallSource = 'manifest' | 'package'
+
+/** `POST /skills/{id}/install` 请求体；source 为 package 时必须带 package_path。 */
+export interface SkillInstallPayload {
+  source?: SkillInstallSource
+  package_path?: string
+}
+
+/** 安装包安装回填的 details：kind=package 时附带包校验和、落盘路径与文件清单。 */
+export interface SkillInstallDetails {
+  kind?: string
+  package_checksum?: string
+  package_path?: string
+  files?: string[]
+  [key: string]: unknown
+}
+
+/** `POST /skills/{id}/install|enable|disable` 返回的安装记录。 */
+export interface SkillInstallation {
+  skill_id: string
+  version: string
+  status: SkillStatus
+  checksum: string
+  manifest_path: string
+  installed_by: string
+  installed_at: string | null
+  details?: SkillInstallDetails
+  updated_at?: string | null
+  /** 仅 install 响应附带：本次安装的边界说明。 */
+  note?: string
+}
+
+/** `POST /skills/{id}/verify`：expected 为安装时记录的校验和。 */
+export interface SkillVerifyResponse {
+  skill_id: string
+  ok: boolean
+  expected: string
+  actual: string
+}
+
+export interface SkillManifestItem {
+  id: string
+  version: string
+  publisher: string
+  trust: SkillTrust
+  license: string
+  description: string
+  adapter: string
+  capabilities: SkillCapability[]
+  entrypoints: Record<string, unknown>
+  limits: Record<string, unknown>
+  credentials: string[]
+  config: Record<string, unknown>
+  checksum: string
+  status: SkillStatus
+  installed_at?: string | null
+  installation?: SkillInstallation | null
+  bindings: SkillBinding[]
+}
+
+export interface SkillCatalogResponse {
+  items: SkillManifestItem[]
+  count: number
+  lock_path: string
+  empty_copy: string
+  note: string
+}
+
+export interface SkillRun {
+  run_id: string
+  skill_id: string
+  skill_version: string
+  capability: string
+  scene: string
+  platform: string
+  shop_id: string
+  status: string
+  latency_ms: number | null
+  error_code: string | null
+  created_at: string | null
+}
+
+export interface SkillRunsResponse {
+  items: SkillRun[]
+  empty_copy: string
+}
+
+/** `GET /skills/{skill_id}`：清单字段 + 安装记录 + bindings + 最近 20 次运行。 */
+export interface SkillDetailResponse extends SkillManifestItem {
+  installation?: SkillInstallation | null
+  runs: SkillRun[]
+}
+
+/** `GET /skills/{skill_id}/bindings`：绑定按 platform + shop_id 匹配。 */
+export interface SkillBindingsResponse {
+  items: SkillBinding[]
+  note: string
+}
+
+/** `PUT /skills/{skill_id}/bindings` 请求体。 */
+export interface SkillBindingPayload {
+  platform: string
+  shop_id: string
+  enabled: boolean
+  priority: number
+  credential_ref: string
+  config: Record<string, unknown>
+}
+
+/** `DELETE /skills/{skill_id}/bindings` 响应。 */
+export interface SkillBindingDeleteResponse {
+  ok: boolean
+}

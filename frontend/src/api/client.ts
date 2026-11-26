@@ -8,6 +8,7 @@ import type {
   ChangeOrderPayload,
   ChangeOrderTransferResponse,
   ContextsResponse,
+  CreatePurchasePlanRequest,
   CreateWritePlanRequest,
   ErrorEnvelope,
   EvidencePayload,
@@ -23,6 +24,8 @@ import type {
   NavResponse,
   NotificationTemplatesResponse,
   PlatformPriceListResponse,
+  PurchaseRefreshResponse,
+  PurchasesResponse,
   ReportPayload,
   ReviewAssignResponse,
   ReviewCloseResponse,
@@ -31,6 +34,21 @@ import type {
   RolesResponse,
   RunDetailPayload,
   SettlementReconciliationResponse,
+  SkillBinding,
+  SkillBindingDeleteResponse,
+  SkillBindingPayload,
+  SkillBindingsResponse,
+  SkillCatalogResponse,
+  SkillDetailResponse,
+  SkillInstallation,
+  SkillInstallPayload,
+  SkillRunsResponse,
+  SkillVerifyResponse,
+  SourcingCandidate,
+  SourcingCandidatesResponse,
+  SourcingProviderResponse,
+  SourcingSearchRequest,
+  SourcingSearchResponse,
   SuggestionActionResponse,
   SubscriptionCreatePayload,
   SubscriptionMutationResponse,
@@ -578,4 +596,140 @@ export function deleteSubscription(id: number): Promise<SubscriptionMutationResp
 
 export function fetchNotificationTemplates(): Promise<NotificationTemplatesResponse> {
   return request<NotificationTemplatesResponse>('/notifications/templates')
+}
+
+/* ------------------------------------------------------------------ */
+/* P13 · 1688 选品与采购                                               */
+/* ------------------------------------------------------------------ */
+
+/** 同步执行一次选品 run；返回候选货源与打分排名。 */
+export function searchSourcing(
+  payload: SourcingSearchRequest,
+): Promise<SourcingSearchResponse> {
+  return request<SourcingSearchResponse>('/sourcing/search', {
+    method: 'POST',
+    body: payload,
+  })
+}
+
+/** 读取选品 run 的候选；不传 run_id 时后端返回最近一次 S10 运行。 */
+export function fetchSourcingCandidates(
+  runId?: string | null,
+): Promise<SourcingCandidatesResponse> {
+  return request<SourcingCandidatesResponse>('/sourcing/candidates', {
+    query: { run_id: runId },
+  })
+}
+
+export function fetchSourcingCandidate(offerId: string): Promise<SourcingCandidate> {
+  return request<SourcingCandidate>(
+    `/sourcing/candidates/${encodeURIComponent(offerId)}`,
+  )
+}
+
+export function fetchSourcingProvider(): Promise<SourcingProviderResponse> {
+  return request<SourcingProviderResponse>('/sourcing/provider')
+}
+
+/** 采购单走 L2 写入计划；这里只创建计划与 checkout，支付必须人工完成。 */
+export function createPurchasePlan(
+  payload: CreatePurchasePlanRequest,
+): Promise<WritePlanCreateResponse> {
+  return request<WritePlanCreateResponse>('/write-plans', { method: 'POST', body: payload })
+}
+
+export function fetchPurchases(): Promise<PurchasesResponse> {
+  return request<PurchasesResponse>('/purchases')
+}
+
+/** 回读 1688/UTP checkout 状态；本系统不代付。 */
+export function refreshPurchase(planId: string): Promise<PurchaseRefreshResponse> {
+  return request<PurchaseRefreshResponse>(
+    `/purchases/${encodeURIComponent(planId)}/refresh`,
+    { method: 'POST' },
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* P14 · 技能中心（S2a：OWNER 可治理，VIEWER 只读）                     */
+/* ------------------------------------------------------------------ */
+
+/** 技能目录：清单、信任等级、能力风险、状态与绑定。 */
+export function fetchSkillCatalog(): Promise<SkillCatalogResponse> {
+  return request<SkillCatalogResponse>('/skills/catalog')
+}
+
+/** Skill 运行记录；不传 skill_id 时返回最近的运行。 */
+export function fetchSkillRuns(
+  params: { skillId?: string | null; limit?: number } = {},
+): Promise<SkillRunsResponse> {
+  return request<SkillRunsResponse>('/skills/runs', {
+    query: { skill_id: params.skillId, limit: params.limit ?? 50 },
+  })
+}
+
+/** 单个 Skill 的清单、安装记录、绑定与最近 20 次运行。 */
+export function fetchSkillDetail(skillId: string): Promise<SkillDetailResponse> {
+  return request<SkillDetailResponse>(`/skills/${encodeURIComponent(skillId)}`)
+}
+
+/**
+ * 安装 Skill：不传 payload 为清单级安装（后端默认 source=manifest）；
+ * source=package 时只落盘与校验，不自动执行包内脚本。
+ */
+export function installSkill(
+  skillId: string,
+  payload?: SkillInstallPayload,
+): Promise<SkillInstallation> {
+  return request<SkillInstallation>(`/skills/${encodeURIComponent(skillId)}/install`, {
+    method: 'POST',
+    ...(payload ? { body: payload } : {}),
+  })
+}
+
+/** 校验清单校验和：返回 expected 与当前文件 actual。 */
+export function verifySkill(skillId: string): Promise<SkillVerifyResponse> {
+  return request<SkillVerifyResponse>(`/skills/${encodeURIComponent(skillId)}/verify`, {
+    method: 'POST',
+  })
+}
+
+export function enableSkill(skillId: string): Promise<SkillInstallation> {
+  return request<SkillInstallation>(`/skills/${encodeURIComponent(skillId)}/enable`, {
+    method: 'POST',
+  })
+}
+
+export function disableSkill(skillId: string): Promise<SkillInstallation> {
+  return request<SkillInstallation>(`/skills/${encodeURIComponent(skillId)}/disable`, {
+    method: 'POST',
+  })
+}
+
+/** 绑定列表：凭据只存引用，不含明文。 */
+export function fetchSkillBindings(skillId: string): Promise<SkillBindingsResponse> {
+  return request<SkillBindingsResponse>(`/skills/${encodeURIComponent(skillId)}/bindings`)
+}
+
+/** 新增/覆盖绑定；platform 与 shop_id 支持 `*` 通配。 */
+export function putSkillBinding(
+  skillId: string,
+  payload: SkillBindingPayload,
+): Promise<SkillBinding> {
+  return request<SkillBinding>(`/skills/${encodeURIComponent(skillId)}/bindings`, {
+    method: 'PUT',
+    body: payload,
+  })
+}
+
+/** 删除绑定：按 platform + shop_id 精确定位。 */
+export function deleteSkillBinding(
+  skillId: string,
+  platform: string,
+  shopId: string,
+): Promise<SkillBindingDeleteResponse> {
+  return request<SkillBindingDeleteResponse>(`/skills/${encodeURIComponent(skillId)}/bindings`, {
+    method: 'DELETE',
+    query: { platform, shop_id: shopId },
+  })
 }

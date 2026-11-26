@@ -23,8 +23,10 @@ from kernel.contexts.metric_data.domain.ports import (
     RawPayload,
     AdCampaignRepository,
     MetricReleaseRepository,
+    PurchaseRepository,
     ReportRepository,
     SettlementRepository,
+    SourcingRepository,
     ReviewTicketRepository,
     StockRepository,
 )
@@ -45,7 +47,9 @@ from kernel.persistence.tables import (
     OdsRawPayload,
     ReportRow,
     ReviewTicketRow,
+    PurchaseOrderRow,
     SettlementDiffRow,
+    SourcingCandidateRow,
     StockDiffRow,
     StockSuggestionRow,
 )
@@ -988,3 +992,168 @@ class SqlSettlementRepository(SettlementRepository):
                 }
                 for row in rows
             ]
+
+
+class SqlSourcingRepository(SourcingRepository):
+    def __init__(self, database: Database) -> None:
+        self.db = database
+
+    def save(self, run_id: RunId, keyword: str, candidates: Sequence[Any]) -> int:
+        with self.db.session() as session:
+            session.query(SourcingCandidateRow).filter(
+                SourcingCandidateRow.run_id == run_id.value
+            ).delete()
+            for candidate in candidates:
+                offer = candidate.offer
+                session.add(
+                    SourcingCandidateRow(
+                        run_id=run_id.value,
+                        keyword=keyword,
+                        offer_id=offer.offer_id,
+                        title=offer.title,
+                        price=offer.price,
+                        post_fee=offer.post_fee,
+                        moq=offer.moq,
+                        sales_30d=offer.sales_30d,
+                        supplier=offer.supplier,
+                        pic_url=offer.pic_url,
+                        url=offer.url,
+                        brand_authorized=offer.brand_authorized,
+                        score=candidate.score,
+                        rank=candidate.rank,
+                        risk_flags=list(candidate.risk_flags),
+                        raw=offer.raw,
+                    )
+                )
+            return len(candidates)
+
+    def by_run(self, run_id: RunId) -> list[dict[str, Any]]:
+        with self.db.session() as session:
+            rows = session.execute(
+                select(SourcingCandidateRow)
+                .where(SourcingCandidateRow.run_id == run_id.value)
+                .order_by(SourcingCandidateRow.rank)
+            ).scalars().all()
+            return [self._dict(row) for row in rows]
+
+    def latest_for_offer(self, offer_id: str) -> dict[str, Any] | None:
+        with self.db.session() as session:
+            row = session.execute(
+                select(SourcingCandidateRow)
+                .where(SourcingCandidateRow.offer_id == offer_id)
+                .order_by(SourcingCandidateRow.id.desc())
+                .limit(1)
+            ).scalar_one_or_none()
+            return self._dict(row) if row else None
+
+    @staticmethod
+    def _dict(row: SourcingCandidateRow) -> dict[str, Any]:
+        return {
+            "run_id": row.run_id,
+            "keyword": row.keyword,
+            "offer_id": row.offer_id,
+            "title": row.title,
+            "price": float(row.price) if row.price is not None else 0.0,
+            "post_fee": float(row.post_fee) if row.post_fee is not None else 0.0,
+            "moq": row.moq,
+            "sales_30d": row.sales_30d,
+            "supplier": row.supplier,
+            "pic_url": row.pic_url,
+            "url": row.url,
+            "brand_authorized": row.brand_authorized,
+            "score": float(row.score) if row.score is not None else 0.0,
+            "rank": row.rank,
+            "risk_flags": list(row.risk_flags or []),
+        }
+
+
+class SqlPurchaseRepository(PurchaseRepository):
+    def __init__(self, database: Database) -> None:
+        self.db = database
+
+    def add(self, order: Any) -> None:
+        with self.db.session() as session:
+            session.add(self._to_row(order))
+
+    def save(self, order: Any) -> None:
+        with self.db.session() as session:
+            row = session.get(PurchaseOrderRow, order.plan_id)
+            if row is None:
+                session.add(self._to_row(order))
+                return
+            row.status = order.status.value
+            row.checkout_id = order.checkout_id
+            row.continue_url = order.continue_url
+            row.total = order.total
+            row.details = order.details
+            row.updated_at = utcnow()
+
+    def get(self, plan_id: str) -> Any | None:
+        with self.db.session() as session:
+            row = session.get(PurchaseOrderRow, plan_id)
+            return self._to_domain(row) if row else None
+
+    def recent(self, limit: int = 50) -> list[Any]:
+        with self.db.session() as session:
+            rows = session.execute(
+                select(PurchaseOrderRow)
+                .order_by(PurchaseOrderRow.created_at.desc())
+                .limit(limit)
+            ).scalars().all()
+            return [self._to_domain(row) for row in rows]
+
+    @staticmethod
+    def _to_row(order: Any) -> PurchaseOrderRow:
+        from datetime import UTC, datetime
+
+        now = datetime.now(UTC)
+        return PurchaseOrderRow(
+            plan_id=order.plan_id,
+            provider=order.provider,
+            items=[item.to_dict() for item in order.items],
+            total=order.total,
+            checkout_id=order.checkout_id,
+            status=order.status.value,
+            continue_url=order.continue_url,
+            buyer_note=order.buyer_note,
+            details=order.details,
+            created_at=order.created_at or now,
+            updated_at=order.updated_at or now,
+        )
+
+    @staticmethod
+    def _to_domain(row: PurchaseOrderRow) -> Any:
+        from datetime import datetime
+        from decimal import Decimal
+
+        from kernel.contexts.metric_data.domain.purchase import (
+            PurchaseItem,
+            PurchaseOrder,
+            PurchaseStatus,
+        )
+
+        items = [
+            PurchaseItem(
+                offer_id=str(item.get("offer_id", "")),
+                title=str(item.get("title", "")),
+                quantity=int(item.get("quantity", 1)),
+                unit_price=Decimal(str(item.get("unit_price", "0"))),
+                post_fee=Decimal(str(item.get("post_fee", "0"))),
+                spec_id=str(item.get("spec_id", "")),
+            )
+            for item in (row.items or [])
+        ]
+        created = as_utc(row.created_at) or datetime.now()
+        return PurchaseOrder(
+            plan_id=row.plan_id,
+            provider=row.provider,
+            items=items,
+            total=Decimal(str(row.total or 0)),
+            checkout_id=row.checkout_id,
+            status=PurchaseStatus(row.status),
+            continue_url=row.continue_url,
+            buyer_note=row.buyer_note,
+            details=dict(row.details or {}),
+            created_at=created,
+            updated_at=as_utc(row.updated_at),
+        )

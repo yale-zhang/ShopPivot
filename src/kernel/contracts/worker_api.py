@@ -73,6 +73,7 @@ class JobStartRequest(BaseModel):
     config_ref: str | None = None
     idempotency_key: str = Field(min_length=3, max_length=200)
     requested_by: str = Field(default="system", max_length=64)
+    params: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def _check_window(self) -> "JobStartRequest":

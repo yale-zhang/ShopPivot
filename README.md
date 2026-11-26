@@ -7,7 +7,7 @@
 - **M0（已完成）**：单平台、单店铺、单场景 S01 经营日报，纯只读 L0；不部署桌面池、不调用 `/write`。
 - **M1（已完成）**：平台上限 **L1**，新增 S05 评价巡检、S07 库存对账、P02/P03/P10/P11/P12、口径卡发布自检（ReleaseGate）、订阅与 n8n 只读编排 ACL。
 - **M2（已完成代码切片）**：平台上限 **L2**，新增 L2 写入闸门闭环（WritePlan → 人工审批 → 一次性 WriteToken → 执行 → 回查 → 归档/补偿）；写入动作覆盖 S02 价格批量维护、S03 活动提报（本地模拟页面写入）；新增审批转交与 S04 投放归集/投产比预警（只出建议）；桌面池与真实平台页面写入仍未启用。
-- **M3（进行中）**：新增 S09 结算/毛利对账与 P08 对账差异页（只读、财务人工认定、逐条双边凭据）；S06 竞品、S08 大促、语义层待后续。
+- **M3（进行中）**：S09 结算/毛利对账 + P08；1688 Skill Hub 选品/采购（S10/S11/P13）；新增 Skill 运行时（S0/S1 目录/执行 + S2a 安装/校验/启停/按店绑定 + S2b 安装包安全解压 + S11 采购迁移 + P14 技能中心），后续 Skill 统一接入；S06 竞品、S08 大促、语义层待后续。
 
 目标始终是验证架构骨架与口径可信：`触发 → 三级取数 → 标准化脱敏 → 口径计算/巡检 → 出报/工单/建议 → 推送 → 留痕归档` 全链可用、`run_id` 可反查原始报文。
 
@@ -36,6 +36,9 @@ PYTHONPATH=src:. python3 -m bootstrap.cli create-price-plan --sku SKU-A --after 
 PYTHONPATH=src:. python3 -m bootstrap.cli approve-plan --plan-id <plan_id>
 PYTHONPATH=src:. python3 -m bootstrap.cli create-campaign-plan --campaign C-618 --sku SKU-B --price 119.00
 PYTHONPATH=src:. python3 -m bootstrap.cli run-scene --scene S09
+PYTHONPATH=src:. python3 -m bootstrap.cli run-scene --scene S10
+PYTHONPATH=src:. python3 -m bootstrap.cli create-purchase-plan --offer-id 1688-1001 --quantity 10
+PYTHONPATH=src:. python3 -m bootstrap.cli skills search 选品
 
 # 6) 启动（二选一）
 make dev          # 一键：API(8000) + 前端(5173)，自动等待 API 就绪
@@ -160,7 +163,7 @@ make serve                                     # 或 make dev 一键启动
 1. 主文档表 4-1/4.3 仍残留「影刀企业版」表述，但 ADR-02 已锁定开源执行栈；代码按 ADR-02 实现（不引入影刀）。
 2. M0 的 headless 执行在控制面进程内完成，`src/worker` 只做能力登记与心跳；Worker API 契约已固定，M2 拆独立执行进程不改契约。
 3. `E001~E008` / `LOG-01~05` 定义在外部模板中，本仓库先按出现上下文建临时注册表（`shared/errors/registry.py`），模板齐备后只改该文件。
-4. 前端 M0 交付 P01/P05/P06（只读态）/P09；M1 增补 P02/P03/P10/P11/P12；M2 增补 P04/P07；M3 增补 P08。P01~P12 均已实现；大促作战、语义层与真实平台接入待后续。
+4. 前端 M0 交付 P01/P05/P06（只读态）/P09；M1 增补 P02/P03/P10/P11/P12；M2 增补 P04/P07；M3 增补 P08/P13/P14。P01~P14 均已实现；大促作战、语义层与真实平台接入待后续。
 
 ## 安全与合规
 

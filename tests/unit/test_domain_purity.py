@@ -33,7 +33,7 @@ def _imports(path: Path) -> list[str]:
 
 
 def test_domain_dirs_exist() -> None:
-    assert len(DOMAIN_DIRS) == 7, [str(p) for p in DOMAIN_DIRS]
+    assert len(DOMAIN_DIRS) == 8, [str(p) for p in DOMAIN_DIRS]
 
 
 def test_domain_does_not_import_frameworks_or_outer_layers() -> None:

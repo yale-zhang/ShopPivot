@@ -1,0 +1,62 @@
+[
+  {
+    "offer_id": "1688-1001",
+    "title": "加厚手提垃圾袋家用厨房一次性塑料袋批发",
+    "price": "8.50",
+    "post_fee": "0.00",
+    "moq": 2,
+    "sales_30d": 3200,
+    "supplier": "义乌市洁净日用品厂",
+    "pic_url": "https://example.invalid/offer-1001.jpg",
+    "url": "https://detail.1688.com/offer/1688-1001.html",
+    "brand_authorized": true
+  },
+  {
+    "offer_id": "1688-1002",
+    "title": "加厚垃圾袋家用大号黑色平口 30 卷",
+    "price": "6.80",
+    "post_fee": "3.00",
+    "moq": 10,
+    "sales_30d": 860,
+    "supplier": "临沂市恒达塑业",
+    "pic_url": "https://example.invalid/offer-1002.jpg",
+    "url": "https://detail.1688.com/offer/1688-1002.html",
+    "brand_authorized": true
+  },
+  {
+    "offer_id": "1688-1003",
+    "title": "品牌联名垃圾袋（需授权）",
+    "price": "5.90",
+    "post_fee": "0.00",
+    "moq": 50,
+    "sales_30d": 120,
+    "supplier": "某品牌代工厂",
+    "pic_url": "https://example.invalid/offer-1003.jpg",
+    "url": "https://detail.1688.com/offer/1688-1003.html",
+    "brand_authorized": false
+  },
+  {
+    "offer_id": "1688-1004",
+    "title": "可降解垃圾袋环保加厚家用",
+    "price": "12.30",
+    "post_fee": "0.00",
+    "moq": 1,
+    "sales_30d": 0,
+    "supplier": "杭州绿材环保",
+    "pic_url": "https://example.invalid/offer-1004.jpg",
+    "url": "https://detail.1688.com/offer/1688-1004.html",
+    "brand_authorized": true
+  },
+  {
+    "offer_id": "1688-2001",
+    "title": "夏季雪纺连衣裙女装一件代发",
+    "price": "39.00",
+    "post_fee": "0.00",
+    "moq": 2,
+    "sales_30d": 1500,
+    "supplier": "广州十三行服饰",
+    "pic_url": "https://example.invalid/offer-2001.jpg",
+    "url": "https://detail.1688.com/offer/1688-2001.html",
+    "brand_authorized": true
+  }
+]

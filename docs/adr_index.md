@@ -20,6 +20,8 @@
 | ADR-14 | 模块化单体 + 显式扩展点 | 生效 | `kernel/module_loader.py`、`kernel/registry.py`、`modules/` |
 | ADR-15 | 自用前提下许可风险降为内部台账 + 三触发器 | 生效 | `docs/licenses.csv`、主文档 11.4 |
 | ADR-16 | manifest 声明 gate_level_max / requires / api_compat，双重强校验 | 生效 | `kernel/contracts/manifest_schema.py`、`kernel/module_loader.py` |
+| ADR-17 | 1688 Skill Hub 作为能力来源：选品确定性 CLI、采购 HITL、不代付 | 生效（mock 已验证；真实 AK/UTP 待 UAT） | `integration/infrastructure/sourcing_providers.py`、`modules/mod_1688_ops/`、`docs/review/m3_1688_integration.md` |
+| ADR-18 | Skill 运行时与信任边界：能力优先、默认不自动安装、风险由平台分配、L3 禁止 | 生效（S0/S1：目录/运行时/S10 迁移；S2 安装/绑定） | `kernel/contexts/skill/`、`modules/mod_skill_hub/`、`skills.lock`、`docs/review/skill_runtime.md` |
 
 ## M0 实现中新增的工程约定（不新增 ADR）
 

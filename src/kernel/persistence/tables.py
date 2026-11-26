@@ -809,6 +809,108 @@ class SettlementDiffRow(Base):
     __table_args__ = (UniqueConstraint("run_id", "order_id", name="uq_settlement_diff_run"),)
 
 
+class SourcingCandidateRow(Base):
+    __tablename__ = "sourcing_candidate"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    run_id: Mapped[str] = mapped_column(String(32), index=True)
+    keyword: Mapped[str] = mapped_column(String(128), default="")
+    offer_id: Mapped[str] = mapped_column(String(64), index=True)
+    title: Mapped[str] = mapped_column(Text, default="")
+    price: Mapped[float] = mapped_column(Numeric(18, 2), default=0)
+    post_fee: Mapped[float] = mapped_column(Numeric(18, 2), default=0)
+    moq: Mapped[int] = mapped_column(Integer, default=1)
+    sales_30d: Mapped[int] = mapped_column(Integer, default=0)
+    supplier: Mapped[str] = mapped_column(String(128), default="")
+    pic_url: Mapped[str] = mapped_column(String(512), default="")
+    url: Mapped[str] = mapped_column(String(512), default="")
+    brand_authorized: Mapped[bool] = mapped_column(Boolean, default=True)
+    score: Mapped[float] = mapped_column(Numeric(6, 2), default=0)
+    rank: Mapped[int] = mapped_column(Integer, default=0)
+    risk_flags: Mapped[list[str]] = mapped_column(JsonType, default=list)
+    raw: Mapped[dict[str, Any]] = mapped_column(JsonType, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("run_id", "offer_id", name="uq_sourcing_candidate_run"),
+        Index("ix_sourcing_candidate_offer", "offer_id"),
+    )
+
+
+class PurchaseOrderRow(Base):
+    __tablename__ = "purchase_order"
+
+    plan_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    provider: Mapped[str] = mapped_column(String(32), default="")
+    items: Mapped[list[dict[str, Any]]] = mapped_column(JsonType, default=list)
+    total: Mapped[float] = mapped_column(Numeric(18, 2), default=0)
+    checkout_id: Mapped[str] = mapped_column(String(128), default="")
+    status: Mapped[str] = mapped_column(String(24), default="AWAITING_PAYMENT", index=True)
+    continue_url: Mapped[str] = mapped_column(String(1024), default="")
+    buyer_note: Mapped[str] = mapped_column(Text, default="")
+    details: Mapped[dict[str, Any]] = mapped_column(JsonType, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+
+class SkillInstallationRow(Base):
+    __tablename__ = "skill_installation"
+
+    skill_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    version: Mapped[str] = mapped_column(String(32), default="")
+    status: Mapped[str] = mapped_column(String(16), default="INSTALLED", index=True)
+    checksum: Mapped[str] = mapped_column(String(128), default="")
+    manifest_path: Mapped[str] = mapped_column(String(512), default="")
+    installed_by: Mapped[str] = mapped_column(String(64), default="owner")
+    details: Mapped[dict[str, Any]] = mapped_column(JsonType, default=dict)
+    installed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+
+class SkillBindingRow(Base):
+    __tablename__ = "skill_binding"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    skill_id: Mapped[str] = mapped_column(String(64), index=True)
+    platform: Mapped[str] = mapped_column(String(32), default="*")
+    shop_id: Mapped[str] = mapped_column(String(64), default="*")
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    priority: Mapped[int] = mapped_column(Integer, default=10)
+    credential_ref: Mapped[str] = mapped_column(String(128), default="")
+    config: Mapped[dict[str, Any]] = mapped_column(JsonType, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+    __table_args__ = (
+        UniqueConstraint("skill_id", "platform", "shop_id", name="uq_skill_binding_scope"),
+    )
+
+
+class SkillRunRow(Base):
+    __tablename__ = "skill_run"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    run_id: Mapped[str] = mapped_column(String(32), index=True)
+    skill_id: Mapped[str] = mapped_column(String(64), index=True)
+    skill_version: Mapped[str] = mapped_column(String(32), default="")
+    capability: Mapped[str] = mapped_column(String(64), index=True)
+    scene: Mapped[str] = mapped_column(String(16), default="")
+    platform: Mapped[str] = mapped_column(String(32), default="")
+    shop_id: Mapped[str] = mapped_column(String(64), default="")
+    status: Mapped[str] = mapped_column(String(16), default="SUCCEEDED")
+    input_digest: Mapped[str] = mapped_column(String(64), default="")
+    output_digest: Mapped[str] = mapped_column(String(64), default="")
+    latency_ms: Mapped[int] = mapped_column(Integer, default=0)
+    error_code: Mapped[str | None] = mapped_column(String(16))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 class AdCampaignMetricRow(Base):
     __tablename__ = "ad_campaign_metric"
 

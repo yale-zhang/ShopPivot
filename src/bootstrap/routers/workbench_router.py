@@ -45,6 +45,8 @@ PAGES: list[dict[str, Any]] = [
     {"page_id": "P10", "menu": "③ 治理与配置", "title": "口径与数据合同", "roles": ["OWNER"]},
     {"page_id": "P11", "menu": "③ 治理与配置", "title": "机器人与日志", "roles": ["OWNER"]},
     {"page_id": "P12", "menu": "③ 治理与配置", "title": "权限与订阅", "roles": ["OWNER"]},
+    {"page_id": "P13", "menu": "① 日常运营", "title": "选品与采购", "roles": ["OWNER", "EDITOR"]},
+    {"page_id": "P14", "menu": "③ 治理与配置", "title": "技能中心", "roles": ["OWNER"]},
 ]
 
 KERNEL_CARDS: dict[str, list[dict[str, Any]]] = {

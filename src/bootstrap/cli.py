@@ -9,6 +9,7 @@ from datetime import UTC, datetime, timedelta
 from bootstrap.container import AppContainer, build_container, run_daily, run_scene
 from bootstrap.seed import seed_all
 from kernel.contexts.approval.application.escalation import EscalateApprovalsUseCase
+from kernel.contexts.integration.infrastructure.skillhub import SkillHubClient
 from kernel.contexts.approval.application.use_cases import ExpireApprovalsUseCase
 from kernel.contexts.approval.application.write_flow import CreateWritePlanCommand
 from kernel.contexts.approval.domain.approval_task import ApprovalTask
@@ -244,6 +245,31 @@ def cmd_create_campaign_plan(container: AppContainer, args: argparse.Namespace) 
     return 0
 
 
+def cmd_create_purchase_plan(container: AppContainer, args: argparse.Namespace) -> int:
+    platform = container.settings.platform_source or container.settings.platform
+    plan, task = container.write_flow.create_plan(
+        CreateWritePlanCommand(
+            action_code="S11.purchase_order",
+            platform=platform,
+            shop_id=container.settings.shop_id,
+            rows=[{"offer_id": args.offer_id, "quantity": args.quantity}],
+            requested_by=args.user,
+            idempotency_key=args.idempotency_key
+            or f"cli-purchase:{args.offer_id}:{args.quantity}",
+            params={"buyer_note": args.note},
+        )
+    )
+    _print(
+        {
+            "plan_id": plan.plan_id,
+            "status": plan.status.value,
+            "task_id": task.task_id,
+            "impact_scope": plan.impact_scope,
+        }
+    )
+    return 0
+
+
 def cmd_approve_plan(container: AppContainer, args: argparse.Namespace) -> int:
     plan, execution = container.write_flow.approve(
         args.plan_id, operator=args.user, reason=args.reason
@@ -283,6 +309,18 @@ def cmd_escalate_approvals(container: AppContainer, _args: argparse.Namespace) -
         container.approvals, container.notifier, clock=container.clock
     )()
     _print(result.to_dict())
+    return 0
+
+
+def cmd_skills_search(_container: AppContainer, args: argparse.Namespace) -> int:
+    client = SkillHubClient()
+    _print({"items": [item.to_dict() for item in client.search(args.query, args.limit)]})
+    return 0
+
+
+def cmd_skills_detail(_container: AppContainer, args: argparse.Namespace) -> int:
+    client = SkillHubClient()
+    _print(client.detail(args.skill_id))
     return 0
 
 
@@ -332,7 +370,7 @@ def main(argv: list[str] | None = None) -> int:
     run_parser.set_defaults(func=cmd_run_daily)
 
     scene_parser = sub.add_parser("run-scene", help="执行指定场景（S01/S05/S07）")
-    scene_parser.add_argument("--scene", required=True, choices=["S01", "S04", "S05", "S07", "S09"])
+    scene_parser.add_argument("--scene", required=True, choices=["S01", "S04", "S05", "S07", "S09", "S10"])
     scene_parser.add_argument("--day", default=None, help="统计日 YYYY-MM-DD，默认今天")
     scene_parser.add_argument("--user", default="system")
     scene_parser.set_defaults(func=cmd_run_scene)
@@ -358,6 +396,14 @@ def main(argv: list[str] | None = None) -> int:
     campaign_parser.add_argument("--user", default="owner")
     campaign_parser.set_defaults(func=cmd_create_campaign_plan)
 
+    purchase_parser = sub.add_parser("create-purchase-plan", help="创建 1688 采购单（L2）")
+    purchase_parser.add_argument("--offer-id", required=True)
+    purchase_parser.add_argument("--quantity", type=int, required=True)
+    purchase_parser.add_argument("--note", default="")
+    purchase_parser.add_argument("--idempotency-key", default=None)
+    purchase_parser.add_argument("--user", default="owner")
+    purchase_parser.set_defaults(func=cmd_create_purchase_plan)
+
     approve_parser = sub.add_parser("approve-plan", help="批准并执行 L2 计划")
     approve_parser.add_argument("--plan-id", required=True)
     approve_parser.add_argument("--reason", default="CLI 批准")
@@ -373,6 +419,16 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("expire-approvals", help="把超时 L2 待办置为 EXPIRED").set_defaults(
         func=cmd_expire_approvals
     )
+    skills = sub.add_parser("skills", help="1688 Skill Hub 检索（不自动安装）")
+    skills_sub = skills.add_subparsers(dest="skills_action", required=True)
+    search_parser = skills_sub.add_parser("search")
+    search_parser.add_argument("query")
+    search_parser.add_argument("--limit", type=int, default=20)
+    search_parser.set_defaults(func=cmd_skills_search)
+    detail_parser = skills_sub.add_parser("detail")
+    detail_parser.add_argument("skill_id")
+    detail_parser.set_defaults(func=cmd_skills_detail)
+
     sub.add_parser("escalate-approvals", help="SLA 提醒/升级/超时作废").set_defaults(
         func=cmd_escalate_approvals
     )

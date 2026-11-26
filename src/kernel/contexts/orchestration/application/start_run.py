@@ -38,6 +38,7 @@ class StartRunCommand:
     requested_by: str = "system"
     idempotency_key: str = ""
     config_ref: str | None = None
+    params: dict[str, object] | None = None
 
 
 @dataclass(frozen=True)
@@ -86,6 +87,7 @@ class StartRunUseCase:
                 "shop_id": cmd.shop_id,
                 "window": [cmd.window_start.isoformat(), cmd.window_end.isoformat()],
                 "config_ref": cmd.config_ref,
+                "params": cmd.params or {},
                 "gate_level_max": self.gate_level_max.value,
                 "schema_version": "1.0",
             }
